@@ -3,11 +3,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import specs.conventionPluginSpec
+import specs.librarySpec
+import specs.pluginSpec
 
 class RoomKmpConventionPlugin: Plugin<Project> {
     override fun apply(target: Project): Unit = with(target) {
-        plugins.apply(pluginSpec.chesskKotlinMultiplatform.pluginId)
-        plugins.apply(pluginSpec.chesskAndroidLibrary.pluginId)
+        plugins.apply(conventionPluginSpec.conventionsKotlinMultiplatform.pluginId)
+        plugins.apply(conventionPluginSpec.conventionsAndroidLibrary.pluginId)
         plugins.apply(pluginSpec.ksp.pluginId)
         plugins.apply(pluginSpec.room.pluginId)
 

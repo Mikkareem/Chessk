@@ -25,6 +25,9 @@ ktor = "3.1.3"
 mockk = "1.14.2"
 jupiter = "5.12.2"
 turbine = "1.2.0"
+spotless = "7.0.4"
+ktlint = "1.6.0"
+ktlint-compose-rules = "0.4.16"
 
 
 [libraries]
@@ -72,6 +75,8 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 room-gradle-plugin = { module = "androidx.room:room-gradle-plugin", version.ref = "room" }
+compose-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "composeMultiplatform" }
+spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 
 [bundles]
 koin = ["koin-compose", "koin-compose-viewmodel"]
@@ -88,8 +93,14 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 
 # Custom Plugins
-chessk-kotlin-multiplatform = { id = "com.techullurgy.chessk.kotlin.multiplatform" }
-chessk-android-library = { id = "com.techullurgy.chessk.android.library" }
-chessk-kmp-room = { id = "com.techullurgy.chessk.kmp.room" }
+conventions-kotlin-multiplatform = { id = "com.techullurgy.conventions.kotlin.multiplatform" }
+conventions-android-library = { id = "com.techullurgy.conventions.android.library" }
+conventions-android-application = { id = "com.techullurgy.conventions.android.application" }
+conventions-compose-multiplatform = { id = "com.techullurgy.conventions.compose.multiplatform" }
+conventions-kmp-room = { id = "com.techullurgy.conventions.kmp.room" }
+conventions-spotless = { id = "com.techullurgy.conventions.spotless" }
+
+chessk-compose-app = { id = "com.techullurgy.chessk.compose.app.module" }

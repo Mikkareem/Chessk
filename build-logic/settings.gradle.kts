@@ -30,4 +30,5 @@ dependencyResolutionManagement {
     }
 }
 
-include(":conventions")
+include(":core-conventions")
+include(":app-conventions")
