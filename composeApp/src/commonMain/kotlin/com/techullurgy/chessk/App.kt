@@ -1,26 +1,39 @@
 package com.techullurgy.chessk
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
+import com.techullurgy.chessk.core.remote.coreRemoteModule
+import com.techullurgy.chessk.navigation.AppNavigation
+import com.techullurgy.chessk.navigation.appModule
+import org.koin.compose.KoinApplication
+import org.koin.core.KoinApplication
 
 @Composable
-fun App(modifier: Modifier = Modifier) {
-    MaterialTheme {
-        Column(
-            modifier = modifier.fillMaxSize().background(Color.Cyan),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Hello From ChessK", fontSize = 30.sp)
+fun App(
+    platformApplication: KoinApplication.() -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    KoinApplication(
+        application = {
+            platformApplication()
+            modules(
+                coreRemoteModule,
+                appModule
+            )
+        }
+    ) {
+        MaterialTheme {
+            Scaffold(
+                modifier = modifier.fillMaxSize()
+            ) {
+                AppNavigation(
+                    modifier = Modifier.padding(it)
+                )
+            }
         }
     }
 }

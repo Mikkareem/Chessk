@@ -35,3 +35,14 @@ plugins {
 includeBuild("build-logic")
 
 include(":composeApp")
+
+include(":navigation")
+
+include(":core:constants")
+include(":core:remote")
+include(":core:ui:photo_picker")
+
+include(":feature:user_details:api")
+include(":feature:user_details:data")
+include(":feature:user_details:domain")
+include(":feature:user_details:presentation")
