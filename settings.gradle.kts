@@ -34,6 +34,13 @@ plugins {
 
 includeBuild("build-logic")
 
+// Server
+include(":server")
+
+// Shared between Server and Client (DTOs and Commons)
+include(":shared")
+
+// Client
 include(":composeApp")
 
 include(":navigation")
@@ -41,6 +48,7 @@ include(":navigation")
 include(":core:constants")
 include(":core:remote")
 include(":core:ui:photo_picker")
+include(":core:ui:snackbar")
 
 include(":feature:user_details:api")
 include(":feature:user_details:data")

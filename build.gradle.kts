@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.room) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.kotlinJvm) apply false
+    alias(libs.plugins.ktor) apply false
 
     alias(libs.plugins.conventions.spotless)
 }
