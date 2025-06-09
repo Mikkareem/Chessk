@@ -2,6 +2,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.compose.ComposeExtension
+import org.jetbrains.compose.desktop.DesktopExtension
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import specs.conventionPluginSpec
 import specs.librarySpec
@@ -39,6 +41,21 @@ class ChessKApplicationConventionPlugin: Plugin<Project> {
             sourceSets.named("desktopMain").dependencies {
                 implementation(composeDeps.desktop.currentOs)
                 implementation(librarySpec.coroutinesSwing)
+            }
+        }
+
+        extensions.configure(ComposeExtension::class.java) {
+            extensions.configure(DesktopExtension::class.java) {
+                application {
+                    val baseApplicationId = ConfigurationKeys.baseApplicationId
+                    mainClass = "$baseApplicationId.MainKt"
+
+                    nativeDistributions {
+                        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+                        packageName = ConfigurationKeys.Desktop.packageName
+                        packageVersion = ConfigurationKeys.Version.versionName
+                    }
+                }
             }
         }
     }

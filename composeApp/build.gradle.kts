@@ -10,8 +10,10 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.navigation)
             implementation(projects.core.remote)
+            implementation(projects.core.ui.snackbar)
 
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
         }
     }
 }

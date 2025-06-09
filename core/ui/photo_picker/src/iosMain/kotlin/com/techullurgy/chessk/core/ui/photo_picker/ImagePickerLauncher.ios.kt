@@ -31,5 +31,9 @@ actual fun rememberPhotoPickerLauncher(
 }
 
 actual fun ByteArray.toImageBitmap(): ImageBitmap {
-    return Bitmap.makeFromImage(Image.makeFromEncoded(this)).asComposeImageBitmap()
+    return try {
+        Bitmap.makeFromImage(Image.makeFromEncoded(this)).asComposeImageBitmap()
+    } catch (_: Exception) {
+        ImageBitmap(10, 10)
+    }
 }

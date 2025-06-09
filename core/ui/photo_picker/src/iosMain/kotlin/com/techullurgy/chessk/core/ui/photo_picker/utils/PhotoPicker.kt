@@ -5,24 +5,28 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
 import platform.Foundation.NSItemProvider
+import platform.Foundation.NSLocalizedDescriptionKey
 import platform.Foundation.dataWithContentsOfURL
-import platform.Foundation.getBytes
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCurrent
 import platform.PhotosUI.PHPickerFilter
+import platform.PhotosUI.PHPickerModeCompact
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.darwin.NSObject
+import platform.posix.memcpy
 
 internal class PhotoPickerDelegate(
     private val scope: CoroutineScope,
@@ -32,21 +36,26 @@ internal class PhotoPickerDelegate(
         picker: PHPickerViewController,
         didFinishPicking: List<*>
     ) {
-        scope.launch {
-            val result = didFinishPicking
-                .mapNotNull {
-                    val result = it as? PHPickerResult ?: return@mapNotNull null
+        scope.launch(Dispatchers.IO) {
+            try {
+                val result = didFinishPicking
+                    .mapNotNull {
+                        val result = it as? PHPickerResult ?: return@mapNotNull null
 
-                    async {
-                        result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
+                        async {
+                            result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
+                        }
                     }
-                }
-                .awaitAll()
-                .filterNotNull()
-                .first()
+                    .awaitAll()
+                    .filterNotNull()
+                    .first()
 
-            withContext(Dispatchers.Main) {
-                onResult(result)
+                withContext(Dispatchers.Main) {
+                    onResult(result)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                coroutineContext.ensureActive()
             }
         }
 
@@ -57,12 +66,10 @@ internal class PhotoPickerDelegate(
 // Extension function to convert NSData to ByteArray
 @OptIn(ExperimentalForeignApi::class)
 private fun NSData.toByteArray(): ByteArray {
-    return ByteArray(this@toByteArray.length.toInt()).apply {
+    val aLength = if(length > Int.MAX_VALUE.toUInt()) Int.MAX_VALUE else length.toInt()
+    return ByteArray(aLength).apply {
         usePinned { pinned ->
-            this@toByteArray.getBytes(
-                buffer = pinned.addressOf(0),
-                length = this@toByteArray.length
-            )
+            memcpy(pinned.addressOf(0), bytes, length)
         }
     }
 }
@@ -73,13 +80,24 @@ private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspen
             typeIdentifier = registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
         ) { url, error ->
             error?.let {
+                val domain = it.domain
+                val code = it.code
+                val message = it.userInfo.get(NSLocalizedDescriptionKey) as? String
+
+                println("Error Start")
+                println("Error domain: $domain")
+                println("Error code: $code")
+                println("Error message: $message")
+                println("Error End")
+
                 continuation.resumeWith(Result.success(null))
                 return@loadFileRepresentationForTypeIdentifier
             }
 
             val data = url?.let {
-                (NSData.dataWithContentsOfURL(it) ?: it.absoluteURL()?.dataRepresentation())?.toByteArray()
-            }
+                NSData.dataWithContentsOfURL(it)?.toByteArray() ?: ByteArray(0)
+            } ?: ByteArray(0)
+
             continuation.resumeWith(Result.success(data))
         }
 
@@ -92,8 +110,11 @@ internal fun createPHPickerViewController(
     delegate: PHPickerViewControllerDelegateProtocol,
 ): PHPickerViewController {
     val configuration = PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary())
-    val filterList = listOf(PHPickerFilter.imagesFilter())
-    val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
+    val filterList = listOf(
+        PHPickerFilter.imagesFilter(),
+        PHPickerFilter.screenshotsFilter()
+    )
+    val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList)
     configuration.filter = newFilter
     configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
     configuration.selectionLimit = 1

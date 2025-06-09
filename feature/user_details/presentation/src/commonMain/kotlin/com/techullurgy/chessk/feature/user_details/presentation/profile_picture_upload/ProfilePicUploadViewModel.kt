@@ -62,7 +62,7 @@ internal class ProfilePicUploadViewModel(
                 progress.totalBytes?.let { total ->
                     _state.update {
                         it.copy(
-                            progress = (progress.sentBytes / total).toFloat() * 100f
+                            progress = (progress.sentBytes / total).toFloat()
                         )
                     }
                 }

@@ -6,9 +6,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val coreRemoteModule = module {
-    single<HttpClient>(
-        named(Constants.KoinQualifierNamedConstants.API_HTTP_CLIENT)
-    ) { apiClient }
+    single<HttpClient>{ apiClient }
 
     single<HttpClient>(
         named(Constants.KoinQualifierNamedConstants.WEBSOCKET_HTTP_CLIENT)

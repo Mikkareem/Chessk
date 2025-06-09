@@ -12,11 +12,14 @@ kotlin {
             implementation(compose.material3)
 
             implementation(projects.core.ui.photoPicker)
+            implementation(projects.core.ui.snackbar)
             implementation(projects.feature.userDetails.domain)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
         }
     }
 }
