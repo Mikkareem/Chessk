@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
-group = "dev.techullurgy.chess"
+group = "com.techullurgy.chessk"
 version = "0.0.1"
 
 application {
@@ -26,4 +26,6 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.testJunit)
+
+    implementation(projects.shared)
 }

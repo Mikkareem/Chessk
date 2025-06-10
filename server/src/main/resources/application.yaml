@@ -1,6 +1,6 @@
 ktor:
   application:
     modules:
-      - dev.techullurgy.chess.ApplicationKt.module
+      - com.techullurgy.chessk.ApplicationKt.module
   deployment:
     port: 8080
