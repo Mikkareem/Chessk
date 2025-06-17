@@ -44,9 +44,11 @@ include(":shared")
 include(":composeApp")
 
 include(":navigation")
+include(":database")
 
 include(":core:constants")
 include(":core:remote")
+include(":core:models")
 include(":core:ui:photo_picker")
 include(":core:ui:snackbar")
 
@@ -54,3 +56,8 @@ include(":feature:user_details:api")
 include(":feature:user_details:data")
 include(":feature:user_details:domain")
 include(":feature:user_details:presentation")
+
+include(":feature:game:api")
+include(":feature:game:data")
+include(":feature:game:domain")
+include(":feature:game:presentation")

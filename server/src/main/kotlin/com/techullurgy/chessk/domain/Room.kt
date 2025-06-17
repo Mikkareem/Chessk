@@ -8,9 +8,18 @@ import com.techullurgy.chessk.shared.events.SelectionResult
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.TimerUpdate
 import com.techullurgy.chessk.shared.models.Member
+import com.techullurgy.chessk.shared.models.Move
 import com.techullurgy.chessk.shared.models.PieceColor
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.seconds
 
@@ -45,8 +54,8 @@ class Room(
     suspend fun startGame() {
         isStarted = true
         observeBoardStateAndBroadcast()
-        whitePlayerSend(getGameStartedEvent().copy(assignedColor = PieceColor.White))
-        blackPlayerSend(getGameStartedEvent().copy(assignedColor = PieceColor.Black))
+        whitePlayerSend(getGameStartedEvent(PieceColor.White))
+        blackPlayerSend(getGameStartedEvent(PieceColor.Black))
         runTimer()
     }
 
@@ -58,7 +67,10 @@ class Room(
         if(data.color != game.currentPlayerColor) return
 
         val availableIndices = game.cellSelectedForMove(data.selectedIndex)
-        sendToCurrentPlayer(SelectionResult(roomId = id, availableIndices = availableIndices, selectedIndex = data.selectedIndex))
+        val availableMoves = availableIndices.map {
+            Move(data.selectedIndex, it)
+        }
+        sendToCurrentPlayer(SelectionResult(roomId = id, availableMoves = availableMoves, selectedIndex = data.selectedIndex))
     }
 
     fun movePiece(data: PieceMove) {
@@ -78,8 +90,9 @@ class Room(
 
     fun getAssignedPlayers(): Set<Player> = players.values.toSet()
 
-    private fun getGameStartedEvent() = GameStarted(
+    private fun getGameStartedEvent(assignedColor: PieceColor) = GameStarted(
         roomId = id,
+        assignedColor = assignedColor,
         members = players.entries.map {
             Member(
                 name = it.value.user.userName,
@@ -112,7 +125,7 @@ class Room(
     private fun sendCurrentBoardStateToPlayer(clientId: String) {
         getAssignedPlayers().find { it.user.clientId == clientId }?.also {
             if(isStarted) {
-                it.sendEvent(getGameStartedEvent().copy(assignedColor = it.colorAssigned))
+                it.sendEvent(getGameStartedEvent(it.colorAssigned))
                 it.sendEvent(game.boardState.value.toGameUpdate())
             }
         }

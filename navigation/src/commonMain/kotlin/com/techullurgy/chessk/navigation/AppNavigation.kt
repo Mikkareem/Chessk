@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.techullurgy.chessk.feature.game.api.navigation.gameNavigation
 import com.techullurgy.chessk.feature.user_details.api.navigation.UserDetails
 import com.techullurgy.chessk.feature.user_details.api.navigation.userDetailsNavigation
 
@@ -19,5 +20,6 @@ fun AppNavigation(
         startDestination = UserDetails
     ) {
         userDetailsNavigation(navController)
+        gameNavigation(navController)
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import com.techullurgy.chessk.core.remote.coreRemoteModule
 import com.techullurgy.chessk.core.ui.snackbar.AppSnackbarHost
 import com.techullurgy.chessk.core.ui.snackbar.LocalSnackbarHostState
+import com.techullurgy.chessk.database.di.databaseModule
 import com.techullurgy.chessk.navigation.AppNavigation
 import com.techullurgy.chessk.navigation.appModule
 import org.koin.compose.KoinApplication
@@ -32,6 +33,7 @@ fun App(
             platformApplication()
             modules(
                 coreRemoteModule,
+                databaseModule,
                 appModule
             )
         }

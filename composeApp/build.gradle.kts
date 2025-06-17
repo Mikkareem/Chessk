@@ -9,6 +9,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.navigation)
+            implementation(projects.database)
             implementation(projects.core.remote)
             implementation(projects.core.ui.snackbar)
 
