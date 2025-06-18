@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "90478ee5d66ed14082ecaee2e85ce9ca",
+    "identityHash": "34db38f4bbae2c133ab944d6197e5434",
     "entities": [
       {
         "tableName": "GameEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`roomId` TEXT NOT NULL, `board` TEXT NOT NULL, `assignedColor` TEXT NOT NULL, `currentPlayer` TEXT NOT NULL, `cutPieces` TEXT, `availableMoves` TEXT, `lastMove` TEXT, `selectedIndex` INTEGER NOT NULL, `kingInCheckIndex` INTEGER, PRIMARY KEY(`roomId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`roomId` TEXT NOT NULL, `board` TEXT NOT NULL, `assignedColor` TEXT, `currentPlayer` TEXT, `cutPieces` TEXT, `availableMoves` TEXT, `lastMove` TEXT, `selectedIndex` INTEGER NOT NULL, `kingInCheckIndex` INTEGER, PRIMARY KEY(`roomId`))",
         "fields": [
           {
             "fieldPath": "roomId",
@@ -23,14 +23,12 @@
           {
             "fieldPath": "assignedColor",
             "columnName": "assignedColor",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "currentPlayer",
             "columnName": "currentPlayer",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "cutPieces",
@@ -148,7 +146,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '90478ee5d66ed14082ecaee2e85ce9ca')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '34db38f4bbae2c133ab944d6197e5434')"
     ]
   }
 }
