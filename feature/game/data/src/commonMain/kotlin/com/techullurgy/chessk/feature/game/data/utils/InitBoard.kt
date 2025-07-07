@@ -1,12 +1,12 @@
 package com.techullurgy.chessk.feature.game.data.utils
 
-import com.techullurgy.chessk.core.models.Bishop
-import com.techullurgy.chessk.core.models.King
-import com.techullurgy.chessk.core.models.Knight
-import com.techullurgy.chessk.core.models.Pawn
-import com.techullurgy.chessk.core.models.Queen
-import com.techullurgy.chessk.core.models.Rook
+import com.techullurgy.chessk.shared.models.Bishop
+import com.techullurgy.chessk.shared.models.King
+import com.techullurgy.chessk.shared.models.Knight
+import com.techullurgy.chessk.shared.models.Pawn
 import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.Queen
+import com.techullurgy.chessk.shared.models.Rook
 
 val sampleInitialBoard = List(64) {
     when(it) {

@@ -2,20 +2,18 @@ package com.techullurgy.chessk.database
 
 import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
-import com.techullurgy.chessk.core.models.Bishop
-import com.techullurgy.chessk.core.models.King
-import com.techullurgy.chessk.core.models.Knight
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.core.models.Pawn
-import com.techullurgy.chessk.core.models.Queen
-import com.techullurgy.chessk.core.models.Rook
 import com.techullurgy.chessk.database.daos.GameDao
 import com.techullurgy.chessk.database.models.GameEntity
 import com.techullurgy.chessk.database.models.TimerEntity
+import com.techullurgy.chessk.shared.models.Bishop
+import com.techullurgy.chessk.shared.models.King
+import com.techullurgy.chessk.shared.models.Knight
+import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.models.Pawn
 import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.Queen
+import com.techullurgy.chessk.shared.models.Rook
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before

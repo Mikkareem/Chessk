@@ -1,11 +1,9 @@
 package com.techullurgy.chessk.database.converters
 
 import androidx.room.TypeConverter
-import com.techullurgy.chessk.core.constants.Constants
-import com.techullurgy.chessk.core.models.Piece
-import com.techullurgy.chessk.core.utils.toBoardPieces
-import com.techullurgy.chessk.core.utils.toBoardPiecesString
 import com.techullurgy.chessk.database.models.BoardPieces
+import com.techullurgy.chessk.shared.utils.toBoardPieces
+import com.techullurgy.chessk.shared.utils.toBoardPiecesString
 
 internal class BoardPiecesTypeConverter {
     @TypeConverter

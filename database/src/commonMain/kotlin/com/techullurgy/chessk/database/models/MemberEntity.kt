@@ -8,7 +8,7 @@ data class MemberEntity(
     val roomId: String,
     val name: String,
     val userId: String,
-    val profilePicUrl: String,
+    val profilePicUrl: String?,
     val assignedColor: PieceColor,
     val isOwner: Boolean = false
 )

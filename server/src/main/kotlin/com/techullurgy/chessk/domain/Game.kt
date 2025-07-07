@@ -1,23 +1,36 @@
 package com.techullurgy.chessk.domain
 
+import com.techullurgy.chessk.shared.models.Move
 import com.techullurgy.chessk.shared.models.PieceColor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-typealias Board = List<Piece?>
-typealias CutPieces = List<Piece>
-
-private const val delimiter = "***"
+typealias Board = List<GamePiece?>
+typealias CutPieces = List<GamePiece>
 
 class Game(
+    roomId: String,
     private val scope: CoroutineScope
 ) {
 
-    private val _boardState = MutableStateFlow(BoardState())
-    val boardState = _boardState.map { it.encode() }
+    private val isGameStarted = MutableStateFlow<Boolean>(false)
+
+    private val _boardState = MutableStateFlow(BoardState(roomId = roomId))
+
+    @OptIn(FlowPreview::class)
+    val boardState = combine(
+        _boardState.map { it.encode() },
+        isGameStarted
+    ) { boardState, isGameStarted ->
+        boardState.copy(gameStarted = isGameStarted)
+    }
+        .debounce(1000)
         .stateIn(
             scope = scope,
             started = SharingStarted.WhileSubscribed(),
@@ -30,8 +43,9 @@ class Game(
     var selectedIndexForMove: Int = -1
         private set
 
-    fun move(to: Int) {
+    val isStarted: Boolean get() = isGameStarted.value
 
+    fun move(to: Int) {
         val newCutPieces: CutPieces = if(_boardState.value.board[to] != null) {
             _boardState.value.cutPieces.toMutableList().apply {
                 add(_boardState.value.board[to]!!)
@@ -39,25 +53,27 @@ class Game(
         } else _boardState.value.cutPieces
 
         val newPiece = when(val currentPiece = _boardState.value.board[selectedIndexForMove]!!) {
-            is Bishop -> currentPiece.copy(index = to)
-            is King -> currentPiece.copy(index = to)
-            is Knight -> currentPiece.copy(index = to)
-            is Pawn -> currentPiece.copy(index = to, isFirstMoveDone = true)
-            is Queen -> currentPiece.copy(index = to)
-            is Rook -> currentPiece.copy(index = to)
+            is GameBishop -> currentPiece.copy(index = to)
+            is GameKing -> currentPiece.copy(index = to)
+            is GameKnight -> currentPiece.copy(index = to)
+            is GamePawn -> currentPiece.copy(index = to, isFirstMoveDone = true)
+            is GameQueen -> currentPiece.copy(index = to)
+            is GameRook -> currentPiece.copy(index = to)
         }
 
         val oppositeColor = if(currentPlayerColor == PieceColor.White) PieceColor.Black else PieceColor.White
         val kingInCheckPosition = checkForOppositeKingInCheck(oppositeColor)
-        val lastMove = Pair(selectedIndexForMove, to)
+        val lastMove = Move(selectedIndexForMove, to)
 
-        if(checkForOppositeKingCheckMate(oppositeColor)) {
+        val newBoard = _boardState.value.board.toMutableList().apply {
+            this[selectedIndexForMove] = null
+            this[to] = newPiece
+        }
+
+        if (checkForOppositeKingCheckMate(oppositeColor)) {
             _boardState.value = _boardState.value.copy(
-                gameOver = true,
-                board = _boardState.value.board.toMutableList().apply {
-                    this[selectedIndexForMove] = null
-                    this[to] = newPiece
-                },
+//                gameOver = true,
+                board = newBoard,
                 cutPieces = newCutPieces,
                 kingInCheckIndex = kingInCheckPosition,
                 lastMove = lastMove,
@@ -68,11 +84,8 @@ class Game(
         changeTurnAndReset()
 
         _boardState.value = _boardState.value.copy(
-            gameOver = false,
-            board = _boardState.value.board.toMutableList().apply {
-                this[selectedIndexForMove] = null
-                this[to] = newPiece
-            },
+//            gameOver = false,
+            board = newBoard,
             cutPieces = newCutPieces,
             kingInCheckIndex = kingInCheckPosition,
             currentTurn = currentPlayerColor,
@@ -89,12 +102,19 @@ class Game(
         selectedIndexForMove = -1
     }
 
+    fun start() {
+        isGameStarted.value = true
+    }
+
     private fun checkForOppositeKingInCheck(oppositeColor: PieceColor): Int? {
-        val oppositeKingPosition = _boardState.value.board.filterIsInstance<King>().first { it.color == oppositeColor }.index
+        val oppositeGameKingPosition = _boardState.value.board.filterIsInstance<GameKing>()
+            .first { it.color == oppositeColor }.index
 
         _boardState.value.board.filterNotNull().filter { it.pieceColor != oppositeColor }
             .forEach {
-                if(it.getAvailableIndices(_boardState.value.board).contains(oppositeKingPosition)) return oppositeKingPosition
+                if (it.getAvailableIndices(_boardState.value.board)
+                        .contains(oppositeGameKingPosition)
+                ) return oppositeGameKingPosition
             }
 
         return null
@@ -116,65 +136,53 @@ class Game(
 }
 
 private data class BoardState(
+    val roomId: String,
     val board: Board = initialBoard(),
     val cutPieces: CutPieces = emptyList(),
     val currentTurn: PieceColor = PieceColor.White,
     val kingInCheckIndex: Int? = null,
-    val gameOver: Boolean = false,
-    val lastMove: Pair<Int, Int>? = null,
+    val lastMove: Move? = null,
+    val gameStarted: Boolean = false,
 )
 
 private fun BoardState.encode() = EncodedBoardState(
-    board = board.parsedAsBoardString(),
-    cutPieces = cutPieces.parsedAsCutPiecesString(),
+    roomId = roomId,
+    board = board.map { it?.toSharedPiece() },
+    cutPieces = cutPieces.map { it.toSharedPiece() }.toSet(),
     currentTurn = currentTurn,
     kingInCheckIndex = kingInCheckIndex,
-    gameOver = gameOver,
-    lastMove = lastMove?.let { "${it.first}***${it.second}" }
+    lastMove = lastMove,
+    gameStarted = gameStarted
 )
 
 private fun initialBoard(): Board = List(8 * 8) {
     when(it.row) {
         0 -> {
             when(it.column) {
-                0,7 -> Rook(it, PieceColor.White)
-                1,6 -> Knight(it, PieceColor.White)
-                2,5 -> Bishop(it, PieceColor.White)
-                3 -> Queen(it, PieceColor.White)
-                4 -> King(it, PieceColor.White)
+                0, 7 -> GameRook(it, PieceColor.White)
+                1, 6 -> GameKnight(it, PieceColor.White)
+                2, 5 -> GameBishop(it, PieceColor.White)
+                3 -> GameQueen(it, PieceColor.White)
+                4 -> GameKing(it, PieceColor.White)
                 else -> null
             }
         }
         1 -> {
-            Pawn(it, PieceColor.White)
+            GamePawn(it, PieceColor.White)
         }
         6 -> {
-            Pawn(it, PieceColor.Black)
+            GamePawn(it, PieceColor.Black)
         }
         7 -> {
             when(it.column) {
-                0,7 -> Rook(it, PieceColor.Black)
-                1,6 -> Knight(it, PieceColor.Black)
-                2,5 -> Bishop(it, PieceColor.Black)
-                3 -> King(it, PieceColor.Black)
-                4 -> Queen(it, PieceColor.Black)
+                0, 7 -> GameRook(it, PieceColor.Black)
+                1, 6 -> GameKnight(it, PieceColor.Black)
+                2, 5 -> GameBishop(it, PieceColor.Black)
+                3 -> GameKing(it, PieceColor.Black)
+                4 -> GameQueen(it, PieceColor.Black)
                 else -> null
             }
         }
         else -> null
     }
 }
-
-private fun Board.parsedAsBoardString() = joinToString(delimiter) { piece ->
-    when (piece) {
-        is Bishop -> if (piece.color == PieceColor.Black) "BB" else "WB"
-        is King -> if (piece.color == PieceColor.Black) "BK" else "WK"
-        is Knight -> if (piece.color == PieceColor.Black) "BN" else "WN"
-        is Pawn -> if (piece.color == PieceColor.Black) "BP" else "WP"
-        is Queen -> if (piece.color == PieceColor.Black) "BQ" else "WQ"
-        is Rook -> if (piece.color == PieceColor.Black) "BR" else "WR"
-        null -> "##"
-    }
-}
-
-private fun CutPieces.parsedAsCutPiecesString() = joinToString(delimiter)

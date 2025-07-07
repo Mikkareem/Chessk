@@ -9,6 +9,10 @@ val coreRemoteModule = module {
     single<HttpClient>{ apiClient }
 
     single<HttpClient>(
+        named(Constants.KoinQualifierNamedConstants.AUTH_HTTP_CLIENT)
+    ) { authClient }
+
+    single<HttpClient>(
         named(Constants.KoinQualifierNamedConstants.WEBSOCKET_HTTP_CLIENT)
     ) { websocketClient }
 }

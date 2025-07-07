@@ -1,7 +1,5 @@
 package com.techullurgy.chessk.feature.game.data.api
 
-import com.techullurgy.chessk.core.utils.toBoardPieces
-import com.techullurgy.chessk.core.utils.toCutPieces
 import com.techullurgy.chessk.feature.game.domain.events.CellSelectionEvent
 import com.techullurgy.chessk.feature.game.domain.events.ClientGameEvent
 import com.techullurgy.chessk.feature.game.domain.events.DisconnectedEvent
@@ -19,6 +17,11 @@ import com.techullurgy.chessk.feature.game.domain.events.TimerUpdateEvent
 import com.techullurgy.chessk.feature.game.domain.events.UserConnectedEvent
 import com.techullurgy.chessk.feature.game.domain.events.UserDisconnectedEvent
 import com.techullurgy.chessk.feature.game.domain.remote.ChessGameApi
+import com.techullurgy.chessk.shared.endpoints.CreateRoomEndpoint
+import com.techullurgy.chessk.shared.endpoints.GameWebsocketEndpoint
+import com.techullurgy.chessk.shared.endpoints.GetCreatedRoomsEndpoint
+import com.techullurgy.chessk.shared.endpoints.GetJoinedRoomsEndpoint
+import com.techullurgy.chessk.shared.endpoints.JoinRoomEndpoint
 import com.techullurgy.chessk.shared.events.CellSelection
 import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
 import com.techullurgy.chessk.shared.events.Disconnected
@@ -31,18 +34,18 @@ import com.techullurgy.chessk.shared.events.ResetSelectionDone
 import com.techullurgy.chessk.shared.events.SelectionResult
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.TimerUpdate
-import com.techullurgy.chessk.shared.events.clientToServerBaseEventJson
-import com.techullurgy.chessk.shared.events.serverToClientBaseEventJson
 import com.techullurgy.chessk.shared.models.GameRoom
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
+import io.ktor.client.plugins.websocket.converter
+import io.ktor.client.plugins.websocket.sendSerialized
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.serialization.deserialize
 import io.ktor.websocket.CloseReason
-import io.ktor.websocket.Frame
 import io.ktor.websocket.close
-import io.ktor.websocket.readText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
@@ -53,6 +56,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -72,9 +77,7 @@ internal class ChessGameApiImpl(
         launch {
             try {
                 try {
-                    session = socketClient.webSocketSession(
-                        urlString = "${ChessGameApi.Companion.WS_BASE_URL}/join/ws"
-                    )
+                    session = socketClient.webSocketSession(GameWebsocketEndpoint.actualUrl)
                     send(UserConnectedEvent)
                 } catch (e: Exception) {
                     send(NetworkNotAvailableEvent)
@@ -84,17 +87,14 @@ internal class ChessGameApiImpl(
 
                 launch {
                     eventChannel.consumeEach {
-                        val text = clientToServerBaseEventJson.encodeToString(it)
-                        val frame = Frame.Text(text)
-                        session?.outgoing?.send(frame)
+                        session?.sendSerialized(it)
                     }
                 }
 
-                session!!.incoming.consumeEach { frame ->
-                    if (frame is Frame.Text) {
-                        val text = frame.readText()
-                        val event = serverToClientBaseEventJson.decodeFromString<ServerToClientBaseEvent>(text)
-
+                session!!.incoming
+                    .receiveAsFlow()
+                    .map { session!!.converter!!.deserialize<ServerToClientBaseEvent>(it) }
+                    .collect { event ->
                         send(
                             when (event) {
                                 is GameStarted -> GameStartedEvent(
@@ -105,10 +105,10 @@ internal class ChessGameApiImpl(
 
                                 is GameUpdate -> GameUpdateEvent(
                                     roomId = event.roomId,
-                                    board = event.board.toBoardPieces(),
+                                    board = event.board,
                                     currentTurn = event.currentTurn,
                                     lastMove = event.lastMove,
-                                    cutPieces = event.cutPieces?.toCutPieces(),
+                                    cutPieces = event.cutPieces,
                                     kingInCheckIndex = event.kingInCheckIndex,
                                 )
 
@@ -127,7 +127,6 @@ internal class ChessGameApiImpl(
                             }
                         )
                     }
-                }
             } catch (e: Exception) {
                 coroutineContext.ensureActive()
                 send(UserDisconnectedEvent)
@@ -178,21 +177,22 @@ internal class ChessGameApiImpl(
     }
 
     override suspend fun fetchAnyJoinedRoomsAvailable(): List<GameRoom> {
-        val response = apiClient.get("${ChessGameApi.Companion.HTTP_BASE_URL}/rooms/joined")
+        val response = apiClient.get(GetJoinedRoomsEndpoint.actualUrl)
         val rooms = response.body<List<GameRoom>>()
         return rooms
     }
 
     override suspend fun getCreatedRoomsByMe(): List<GameRoom> {
-        TODO("Not yet implemented")
+        apiClient.get(GetCreatedRoomsEndpoint.actualUrl)
+        return emptyList()
     }
 
     override suspend fun joinRoom(roomId: String) {
-        TODO("Not yet implemented")
+        apiClient.post(JoinRoomEndpoint.actualUrl)
     }
 
     override suspend fun createRoom(room: GameRoom) {
-        TODO("Not yet implemented")
+        apiClient.post(CreateRoomEndpoint.actualUrl)
     }
 
     private fun <T> Channel<T>.reset(): Channel<T> {

@@ -19,11 +19,4 @@ interface ChessGameApi {
     suspend fun getCreatedRoomsByMe(): List<GameRoom>
     suspend fun joinRoom(roomId: String)
     suspend fun createRoom(room: GameRoom)
-
-    companion object {
-        private const val HOST_AND_PORT = "192.168.225.184:8080"
-
-        const val HTTP_BASE_URL = "http://$HOST_AND_PORT"
-        const val WS_BASE_URL = "ws://$HOST_AND_PORT"
-    }
 }

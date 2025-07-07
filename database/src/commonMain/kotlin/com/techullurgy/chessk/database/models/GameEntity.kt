@@ -3,7 +3,7 @@ package com.techullurgy.chessk.database.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.core.models.Piece
+import com.techullurgy.chessk.shared.models.Piece
 import com.techullurgy.chessk.shared.models.PieceColor
 
 typealias BoardPieces = List<Piece?>

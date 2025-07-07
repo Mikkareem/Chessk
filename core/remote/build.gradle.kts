@@ -10,6 +10,7 @@ kotlin {
             implementation(libs.koin.core)
 
             implementation(projects.core.constants)
+            implementation(projects.shared)
         }
     }
 }

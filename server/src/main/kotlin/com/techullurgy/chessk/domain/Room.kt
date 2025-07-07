@@ -7,6 +7,7 @@ import com.techullurgy.chessk.shared.events.ResetSelectionDone
 import com.techullurgy.chessk.shared.events.SelectionResult
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.TimerUpdate
+import com.techullurgy.chessk.shared.models.GameRoom
 import com.techullurgy.chessk.shared.models.Member
 import com.techullurgy.chessk.shared.models.Move
 import com.techullurgy.chessk.shared.models.PieceColor
@@ -29,15 +30,13 @@ class Room(
     val description: String,
     val createdBy: String
 ) {
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val game = Game(coroutineScope)
+    private val game = Game(id, coroutineScope)
 
     private val players = ConcurrentHashMap<PieceColor, Player>()
 
     private var timerJob: Job? = null
-
-    private var isStarted: Boolean = false
 
     fun addPlayer(player: Player) {
         if (players.size in 0 until 2) {
@@ -51,11 +50,9 @@ class Room(
         }
     }
 
-    suspend fun startGame() {
-        isStarted = true
+    fun startGame() {
+        game.start()
         observeBoardStateAndBroadcast()
-        whitePlayerSend(getGameStartedEvent(PieceColor.White))
-        blackPlayerSend(getGameStartedEvent(PieceColor.Black))
         runTimer()
     }
 
@@ -89,6 +86,12 @@ class Room(
     }
 
     fun getAssignedPlayers(): Set<Player> = players.values.toSet()
+
+    fun onUserSessionEstablished(clientId: String) {
+        if (game.isStarted) {
+            sendCurrentBoardStateToPlayer(clientId)
+        }
+    }
 
     private fun getGameStartedEvent(assignedColor: PieceColor) = GameStarted(
         roomId = id,
@@ -124,10 +127,8 @@ class Room(
 
     private fun sendCurrentBoardStateToPlayer(clientId: String) {
         getAssignedPlayers().find { it.user.clientId == clientId }?.also {
-            if(isStarted) {
-                it.sendEvent(getGameStartedEvent(it.colorAssigned))
-                it.sendEvent(game.boardState.value.toGameUpdate())
-            }
+            it.sendEvent(getGameStartedEvent(it.colorAssigned))
+            it.sendEvent(game.boardState.value.toGameUpdate())
         }
     }
 
@@ -162,3 +163,10 @@ class Room(
         coroutineScope.cancel()
     }
 }
+
+internal fun Room.toGameRoom() = GameRoom(
+    roomId = id,
+    roomName = name,
+    roomDescription = description,
+    createdBy = createdBy
+)

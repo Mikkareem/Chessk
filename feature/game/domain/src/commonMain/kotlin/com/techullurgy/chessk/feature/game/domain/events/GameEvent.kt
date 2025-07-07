@@ -1,8 +1,8 @@
 package com.techullurgy.chessk.feature.game.domain.events
 
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.core.models.Piece
 import com.techullurgy.chessk.shared.models.Member
+import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.models.Piece
 import com.techullurgy.chessk.shared.models.PieceColor
 
 sealed interface GameEvent
@@ -24,7 +24,7 @@ data class ResetSelectionDoneEvent(
 
 data class SelectionResultEvent(
     val roomId: String,
-    val availableMoves: List<Move>,
+    val availableMoves: List<Move>?,
     val selectedIndex: Int
 ): ServerGameEvent
 

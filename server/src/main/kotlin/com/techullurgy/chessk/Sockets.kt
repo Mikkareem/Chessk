@@ -1,33 +1,43 @@
 package com.techullurgy.chessk
 
 import com.techullurgy.chessk.domain.GameServer
-import com.techullurgy.chessk.domain.decodeBaseModel
-import com.techullurgy.chessk.domain.getType
-import com.techullurgy.chessk.sessions.GameSession
-import com.techullurgy.chessk.shared.events.BaseEventConstants
+import com.techullurgy.chessk.shared.endpoints.GameWebsocketEndpoint
 import com.techullurgy.chessk.shared.events.CellSelection
 import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
 import com.techullurgy.chessk.shared.events.Disconnected
 import com.techullurgy.chessk.shared.events.EnterRoomHandshake
 import com.techullurgy.chessk.shared.events.PieceMove
 import com.techullurgy.chessk.shared.events.ResetSelection
-import io.ktor.serialization.kotlinx.*
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
-import io.ktor.server.websocket.*
-import io.ktor.websocket.*
+import com.techullurgy.chessk.shared.events.baseEventJson
+import com.techullurgy.chessk.shared.utils.SharedConstants
+import io.ktor.serialization.deserialize
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
+import io.ktor.server.websocket.DefaultWebSocketServerSession
+import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.converter
+import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.close
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.json.Json
 
 val gameServer = GameServer()
 
 fun Application.configureSockets() {
     install(WebSockets) {
-        contentConverter = KotlinxWebsocketSerializationConverter(Json)
+        contentConverter = KotlinxWebsocketSerializationConverter(
+            Json(from = baseEventJson) {}
+        )
     }
 
     routing {
-        route("/join/ws") {
+        route(GameWebsocketEndpoint.signature) {
             standardWebsocket { socket, clientId, payload ->
                 when(payload) {
                     is EnterRoomHandshake -> {
@@ -54,7 +64,7 @@ fun Application.configureSockets() {
     }
 }
 
-fun Route.standardWebsocket(
+private fun Route.standardWebsocket(
     handleFrame: suspend (
         socket: DefaultWebSocketServerSession,
         clientId: String,
@@ -62,35 +72,30 @@ fun Route.standardWebsocket(
     ) -> Unit
 ) {
     webSocket {
-        val session = call.sessions.get<GameSession>()
-        if(session == null) {
+
+        val clientId = call.parameters[SharedConstants.Parameters.CHESSK_CLIENT_ID_HEADER_KEY]
+
+        if (clientId == null) {
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No Session found"))
             return@webSocket
         }
 
         try {
-            gameServer.createSessionForClientId(session.clientId, this)
-            for(frame in incoming) {
-                if(frame is Frame.Text) {
-                    val message = frame.readText()
-                    val messageType = message.getType()
+            gameServer.createSessionForClientId(clientId, this)
 
-                    val payload = when(messageType) {
-                        BaseEventConstants.TYPE_ENTER_ROOM_HANDSHAKE -> decodeBaseModel<EnterRoomHandshake>(message)
-                        BaseEventConstants.TYPE_CELL_SELECTION -> decodeBaseModel<CellSelection>(message)
-                        BaseEventConstants.TYPE_PIECE_MOVE -> decodeBaseModel<PieceMove>(message)
-                        BaseEventConstants.TYPE_RESET_SELECTION -> decodeBaseModel<ResetSelection>(message)
-                        BaseEventConstants.TYPE_DISCONNECT -> decodeBaseModel<Disconnected>(message)
-                        else -> TODO()
-                    }
+            gameServer.getJoinedRoomsForClientId(clientId)
+                .forEach { it.onUserSessionEstablished(clientId) }
 
-                    handleFrame(this, session.clientId, payload)
+            incoming
+                .receiveAsFlow()
+                .map { converter!!.deserialize<ClientToServerBaseEvent>(it) }
+                .collect { payload ->
+                    handleFrame(this, clientId, payload)
                 }
-            }
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            gameServer.disconnect(session.clientId)
+            gameServer.disconnect(clientId)
         }
     }
 }

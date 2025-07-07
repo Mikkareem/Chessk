@@ -1,12 +1,12 @@
 package com.techullurgy.chessk.feature.game.data.db
 
-import com.techullurgy.chessk.shared.models.Move
 import com.techullurgy.chessk.database.daos.GameDao
 import com.techullurgy.chessk.database.models.BoardPieces
 import com.techullurgy.chessk.database.models.CutPieces
 import com.techullurgy.chessk.database.models.GameEntity
-import com.techullurgy.chessk.database.models.TimerEntity
 import com.techullurgy.chessk.database.models.MemberEntity
+import com.techullurgy.chessk.database.models.TimerEntity
+import com.techullurgy.chessk.shared.models.Move
 import com.techullurgy.chessk.shared.models.PieceColor
 
 internal class GameDbDataSource(
@@ -33,7 +33,7 @@ internal class GameDbDataSource(
     suspend fun updateAvailableMoves(
         roomId: String,
         selectedIndex: Int,
-        availableMoves: List<Move>
+        availableMoves: List<Move>?
     ) = gameDao.updateAvailableMoves(roomId, selectedIndex, availableMoves)
 
     suspend fun resetSelection(roomId: String) = gameDao.resetSelection(roomId)

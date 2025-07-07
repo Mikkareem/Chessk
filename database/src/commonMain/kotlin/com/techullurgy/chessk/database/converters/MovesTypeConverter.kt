@@ -1,10 +1,9 @@
 package com.techullurgy.chessk.database.converters
 
 import androidx.room.TypeConverter
-import com.techullurgy.chessk.core.constants.Constants
-import com.techullurgy.chessk.core.utils.toMoves
-import com.techullurgy.chessk.core.utils.toMovesString
 import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.utils.toMoves
+import com.techullurgy.chessk.shared.utils.toMovesString
 
 internal class MovesTypeConverter {
     @TypeConverter

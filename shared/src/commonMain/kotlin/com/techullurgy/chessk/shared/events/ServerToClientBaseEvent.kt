@@ -2,7 +2,12 @@ package com.techullurgy.chessk.shared.events
 
 import com.techullurgy.chessk.shared.models.Member
 import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.models.Piece
 import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.utils.BoardSerializer
+import com.techullurgy.chessk.shared.utils.CutPiecesSerializer
+import com.techullurgy.chessk.shared.utils.MoveSerializer
+import com.techullurgy.chessk.shared.utils.MovesSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,7 +26,8 @@ data class TimerUpdate(
 @SerialName(BaseEventConstants.TYPE_SELECTION_RESULT)
 data class SelectionResult(
     val roomId: String,
-    val availableMoves: List<Move>,
+    @Serializable(with = MovesSerializer::class)
+    val availableMoves: List<Move>?,
     val selectedIndex: Int
 ): ServerToClientBaseEvent
 
@@ -29,12 +35,15 @@ data class SelectionResult(
 @SerialName(BaseEventConstants.TYPE_GAME_UPDATE)
 data class GameUpdate(
     val roomId: String,
-    val board: String,
+    @Serializable(with = BoardSerializer::class)
+    val board: List<Piece?>,
     val currentTurn: PieceColor,
+    @Serializable(with = MoveSerializer::class)
     val lastMove: Move?,
-    val cutPieces: String?,
+    @Serializable(with = CutPiecesSerializer::class)
+    val cutPieces: Set<Piece>?,
     val kingInCheckIndex: Int?,
-    val gameOver: Boolean
+    val gameStarted: Boolean
 ): ServerToClientBaseEvent
 
 @Serializable

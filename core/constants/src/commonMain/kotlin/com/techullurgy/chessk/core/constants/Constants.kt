@@ -1,5 +1,7 @@
 package com.techullurgy.chessk.core.constants
 
+import com.techullurgy.chessk.shared.utils.SharedConstants
+
 object Constants {
 
     object Core {
@@ -21,11 +23,12 @@ object Constants {
     }
 
     object HttpClientHeadersConstants {
-        const val CLIENT_ID = "client_id"
+        const val CLIENT_ID = SharedConstants.Parameters.CHESSK_CLIENT_ID_HEADER_KEY
     }
 
     object KoinQualifierNamedConstants {
         const val APP_COROUTINE_SCOPE = "APP_COROUTINE_SCOPE"
         const val WEBSOCKET_HTTP_CLIENT = "WEBSOCKET_HTTP_CLIENT"
+        const val AUTH_HTTP_CLIENT = "AUTH_HTTP_CLIENT"
     }
 }

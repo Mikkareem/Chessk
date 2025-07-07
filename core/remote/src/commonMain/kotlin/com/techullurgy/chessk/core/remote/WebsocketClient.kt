@@ -1,5 +1,6 @@
 package com.techullurgy.chessk.core.remote
 
+import com.techullurgy.chessk.shared.events.baseEventJson
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.websocket.WebSockets
@@ -12,6 +13,8 @@ internal val websocketClient = HttpClient {
     install(HttpCookies)
     install(WebSockets) {
         pingIntervalMillis = 20_000
-        contentConverter = KotlinxWebsocketSerializationConverter(Json)
+        contentConverter = KotlinxWebsocketSerializationConverter(
+            Json(from = baseEventJson) {}
+        )
     }
 }

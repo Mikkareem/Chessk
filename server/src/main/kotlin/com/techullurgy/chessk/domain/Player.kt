@@ -2,9 +2,8 @@ package com.techullurgy.chessk.domain
 
 import com.techullurgy.chessk.gameServer
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
-import com.techullurgy.chessk.shared.events.serverToClientBaseEventJson
 import com.techullurgy.chessk.shared.models.PieceColor
-import io.ktor.websocket.Frame
+import io.ktor.server.websocket.sendSerialized
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
@@ -19,10 +18,9 @@ data class Player(
 
     fun sendEvent(event: ServerToClientBaseEvent) {
         gameServer.getSessionForClientId(user.clientId)?.let {
-            val message = serverToClientBaseEventJson.encodeToString<ServerToClientBaseEvent>(event)
             if(it.isActive) {
                 it.launch {
-                    it.send(Frame.Text(message))
+                    it.sendSerialized<ServerToClientBaseEvent>(event)
                 }
             }
         }

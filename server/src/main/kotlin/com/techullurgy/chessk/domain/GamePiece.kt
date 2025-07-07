@@ -1,14 +1,21 @@
 package com.techullurgy.chessk.domain
 
+import com.techullurgy.chessk.shared.models.Bishop
+import com.techullurgy.chessk.shared.models.King
+import com.techullurgy.chessk.shared.models.Knight
+import com.techullurgy.chessk.shared.models.Pawn
+import com.techullurgy.chessk.shared.models.Piece
 import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.Queen
+import com.techullurgy.chessk.shared.models.Rook
 
-sealed class Piece(
+sealed class GamePiece(
     val pieceColor: PieceColor,
     private val pieceIndex: Int
 ) {
-    protected abstract fun getAvailableMovesAt(board: List<Piece?>): List<Int>
+    protected abstract fun getAvailableMovesAt(board: List<GamePiece?>): List<Int>
 
-    protected fun getVerticalMoves(index: Int, board: List<Piece?>): List<Int> {
+    protected fun getVerticalMoves(index: Int, board: List<GamePiece?>): List<Int> {
         val indices = mutableListOf<Int>()
         val currentRow = index.row
         val currentColumn = index.column
@@ -36,7 +43,7 @@ sealed class Piece(
         return indices
     }
 
-    protected fun getHorizontalMoves(index: Int, board: List<Piece?>): List<Int> {
+    protected fun getHorizontalMoves(index: Int, board: List<GamePiece?>): List<Int> {
         val indices = mutableListOf<Int>()
         val currentRow = index.row
         val currentColumn = index.column
@@ -64,7 +71,7 @@ sealed class Piece(
         return indices
     }
 
-    protected fun getDiagonalMoves(index: Int, board: List<Piece?>): List<Int> {
+    protected fun getDiagonalMoves(index: Int, board: List<GamePiece?>): List<Int> {
         val indices = mutableListOf<Int>()
 
         val currentRow = index.row
@@ -101,7 +108,7 @@ sealed class Piece(
         return indices
     }
 
-    protected fun getAntiDiagonalMoves(index: Int, board: List<Piece?>): List<Int> {
+    protected fun getAntiDiagonalMoves(index: Int, board: List<GamePiece?>): List<Int> {
         val indices = mutableListOf<Int>()
 
         val currentRow = index.row
@@ -138,7 +145,7 @@ sealed class Piece(
         return indices
     }
 
-    protected fun getLMoves(index: Int, board: List<Piece?>): List<Int> {
+    protected fun getLMoves(index: Int, board: List<GamePiece?>): List<Int> {
         val indices = mutableListOf<Int>()
 
         val currentRow = index.row
@@ -195,7 +202,7 @@ sealed class Piece(
         return indices
     }
 
-    fun getAvailableIndices(board: List<Piece?>): List<Int> {
+    fun getAvailableIndices(board: List<GamePiece?>): List<Int> {
         return getAvailableMovesAt(board).filter {
             val piece = this
             val newBoard = board.toMutableList().apply {
@@ -206,38 +213,48 @@ sealed class Piece(
         }
     }
 
-    private fun isKingInCheck(board: List<Piece?>): Boolean {
-        val kingPosition = board.filterIsInstance<King>().first { it.color == pieceColor }.index
+    private fun isKingInCheck(board: List<GamePiece?>): Boolean {
+        val gameKingPosition =
+            board.filterIsInstance<GameKing>().first { it.color == pieceColor }.index
         board.filterNotNull().filter { it.pieceColor != pieceColor }.forEach {
-            if(it.getAvailableMovesAt(board).contains(kingPosition)) return true
+            if (it.getAvailableMovesAt(board).contains(gameKingPosition)) return true
         }
         return false
     }
 
     companion object {
-        protected fun changeIndex(piece: Piece?, index: Int): Piece? {
-            return when(piece) {
-                is Bishop -> piece.copy(index = index)
-                is King -> piece.copy(index = index)
-                is Knight -> piece.copy(index = index)
-                is Pawn -> piece.copy(index = index)
-                is Queen -> piece.copy(index = index)
-                is Rook -> piece.copy(index = index)
-                else -> piece
+        protected fun changeIndex(gamePiece: GamePiece?, index: Int): GamePiece? {
+            return when (gamePiece) {
+                is GameBishop -> gamePiece.copy(index = index)
+                is GameKing -> gamePiece.copy(index = index)
+                is GameKnight -> gamePiece.copy(index = index)
+                is GamePawn -> gamePiece.copy(index = index)
+                is GameQueen -> gamePiece.copy(index = index)
+                is GameRook -> gamePiece.copy(index = index)
+                else -> gamePiece
             }
         }
     }
+
+    fun toSharedPiece(): Piece = when (this) {
+        is GameBishop -> Bishop(pieceColor)
+        is GameKing -> King(pieceColor)
+        is GameKnight -> Knight(pieceColor)
+        is GamePawn -> Pawn(pieceColor)
+        is GameQueen -> Queen(pieceColor)
+        is GameRook -> Rook(pieceColor)
+    }
 }
 
-data class Pawn(
+data class GamePawn(
     val index: Int,
     val color: PieceColor,
     val isFirstMoveDone: Boolean = false,
-): Piece(color, index) {
+) : GamePiece(color, index) {
     private val direction: Int
         get() = if(pieceColor == PieceColor.White) 1 else -1
 
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         val result = mutableListOf<Int>()
 
         val currentRow = index.row
@@ -271,11 +288,11 @@ data class Pawn(
     }
 }
 
-data class King(
+data class GameKing(
     val index: Int,
     val color: PieceColor,
-): Piece(color, index) {
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+) : GamePiece(color, index) {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         val result = mutableListOf<Int>()
 
         val currentRow = index.row
@@ -299,38 +316,38 @@ data class King(
     }
 }
 
-data class Queen(
+data class GameQueen(
     val index: Int,
     val color: PieceColor,
-): Piece(color, index) {
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+) : GamePiece(color, index) {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         return getVerticalMoves(index, board) + getHorizontalMoves(index, board) + getDiagonalMoves(index, board) + getAntiDiagonalMoves(index, board)
     }
 }
 
-data class Bishop(
+data class GameBishop(
     val index: Int,
     val color: PieceColor,
-): Piece(color, index) {
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+) : GamePiece(color, index) {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         return getDiagonalMoves(index, board) + getAntiDiagonalMoves(index, board)
     }
 }
 
-data class Knight(
+data class GameKnight(
     val index: Int,
     val color: PieceColor,
-): Piece(color, index) {
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+) : GamePiece(color, index) {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         return getLMoves(index, board)
     }
 }
 
-data class Rook(
+data class GameRook(
     val index: Int,
     val color: PieceColor,
-): Piece(color, index) {
-    override fun getAvailableMovesAt(board: List<Piece?>): List<Int> {
+) : GamePiece(color, index) {
+    override fun getAvailableMovesAt(board: List<GamePiece?>): List<Int> {
         return getVerticalMoves(index, board) + getHorizontalMoves(index, board)
     }
 }

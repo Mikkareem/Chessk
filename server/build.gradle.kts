@@ -27,5 +27,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.testJunit)
 
+    testImplementation(libs.ktor.client.content.negotiation)
+
     implementation(projects.shared)
 }
