@@ -95,5 +95,5 @@ suspend inline fun <reified T> WebsocketFrame.asDeserialized(): T? {
     val frame = when (this) {
         is WebsocketFrame.Text -> Frame.Text(value)
     }
-    return (session as KtorWebsocketSession).converter?.deserialize<T>(frame)
+    return (session as? KtorWebsocketSession)?.converter?.deserialize<T>(frame)
 }
