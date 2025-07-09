@@ -7,6 +7,8 @@ import com.techullurgy.chessk.domain.userRepository
 import com.techullurgy.chessk.shared.dto.AuthLoginRequest
 import com.techullurgy.chessk.shared.dto.AuthRegisterRequest
 import com.techullurgy.chessk.shared.dto.AuthSuccessResponse
+import com.techullurgy.chessk.shared.dto.CreateRoomRequest
+import com.techullurgy.chessk.shared.dto.CreateRoomResponse
 import com.techullurgy.chessk.shared.dto.GameRoomResponse
 import com.techullurgy.chessk.shared.dto.JoinRoomRequest
 import com.techullurgy.chessk.shared.dto.JoinRoomResponse
@@ -20,7 +22,6 @@ import com.techullurgy.chessk.shared.endpoints.LoginUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.RegisterUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.StartGameEndpoint
 import com.techullurgy.chessk.shared.endpoints.UploadProfilePictureEndpoint
-import com.techullurgy.chessk.shared.models.GameRoom
 import com.techullurgy.chessk.shared.models.PieceColor
 import com.techullurgy.chessk.shared.utils.SharedConstants
 import io.ktor.http.HttpStatusCode
@@ -59,9 +60,9 @@ private fun Route.createRoom() {
     post(CreateRoomEndpoint.signature) {
         val clientId = call.parameters[SharedConstants.Parameters.CHESSK_CLIENT_ID_HEADER_KEY]!!
         val createdBy = userRepository.getUserByClientId(clientId)?.userId ?: ""
-        val model = call.receive<GameRoom>().copy(createdBy = createdBy)
+        val model = call.receive<CreateRoomRequest>().room.copy(createdBy = createdBy)
         val roomModel = gameServer.createRoom(model)
-        call.respond(HttpStatusCode.Accepted, roomModel)
+        call.respond(HttpStatusCode.Accepted, CreateRoomResponse(roomModel))
     }
 }
 
@@ -131,6 +132,7 @@ private fun Route.leaveRoom() {
         val room = gameServer.getRoomById(roomId)!!
 
         room.removePlayer(clientId)
+        call.respond(HttpStatusCode.OK, Unit)
     }
 }
 
@@ -149,6 +151,7 @@ private fun Route.startGame() {
         val room = gameServer.getRoomById(roomId)!!
 
         room.startGame()
+        call.respond(HttpStatusCode.OK, Unit)
     }
 }
 
