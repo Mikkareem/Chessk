@@ -19,7 +19,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-internal class KtorWebsocketSession(
+class KtorWebsocketSession(
     private val socket: DefaultClientWebSocketSession
 ) : WebsocketSession {
 
