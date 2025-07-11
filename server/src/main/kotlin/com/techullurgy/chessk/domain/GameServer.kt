@@ -1,6 +1,6 @@
 package com.techullurgy.chessk.domain
 
-import com.techullurgy.chessk.shared.models.GameRoom
+import com.techullurgy.chessk.shared.models.GameRoomShared
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -10,7 +10,7 @@ class GameServer {
 
     private val rooms = ConcurrentHashMap<String, Room>()
 
-    fun createRoom(model: GameRoom): GameRoom {
+    fun createRoom(model: GameRoomShared): GameRoomShared {
         val roomId = UUID.randomUUID().toString()
         val room = Room(roomId, model.roomName, model.roomDescription, model.createdBy)
         rooms.put(roomId, room)

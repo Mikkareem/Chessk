@@ -11,14 +11,17 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 sealed interface AppResult<out T> {
     data object Loading : AppResult<Nothing>
-    data object Failure : AppResult<Nothing>
     data class Success<T>(val data: T) : AppResult<T>
+    data object Failure : AppResult<Nothing>
+
+    data class FailureWithException(val exc: Throwable) : AppResult<Nothing>
 }
 
 fun <T, R> AppResult<T>.convertTo(block: (T) -> R): AppResult<R> = when (this) {
     AppResult.Failure -> AppResult.Failure
     AppResult.Loading -> AppResult.Loading
     is AppResult.Success -> AppResult.Success(block(data))
+    is AppResult.FailureWithException -> AppResult.FailureWithException(exc)
 }
 
 @OptIn(ExperimentalAtomicApi::class)
@@ -30,6 +33,7 @@ suspend fun <T> Flow<AppResult<T>>.takeSuccessResult(): T {
             launch {
                 collect {
                     when (it) {
+                        is AppResult.FailureWithException -> coroutineContext[Job]?.cancel()
                         AppResult.Failure -> coroutineContext[Job]?.cancel()
                         AppResult.Loading -> {}
                         is AppResult.Success -> {

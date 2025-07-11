@@ -1,7 +1,7 @@
 package com.techullurgy.chessk.shared.dto
 
-import com.techullurgy.chessk.shared.models.GameRoom
+import com.techullurgy.chessk.shared.models.GameRoomShared
 
 data class CreateRoomResponse(
-    val room: GameRoom
+    val room: GameRoomShared
 )

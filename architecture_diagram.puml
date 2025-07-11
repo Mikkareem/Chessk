@@ -178,8 +178,8 @@ digraph G {
     data_api -> ktor_bundle
     data_api -> shared [label="api"]
     data_api -> base [label="api"]
+    data_api -> data_datastore
     data_remote -> data_api [label="api"]
-    data_remote -> data_datastore
 
 
     f_auth_presentation -> f_auth_domain

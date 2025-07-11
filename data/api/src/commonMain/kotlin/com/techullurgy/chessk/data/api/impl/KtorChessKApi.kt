@@ -2,7 +2,6 @@ package com.techullurgy.chessk.data.api.impl
 
 import com.techullurgy.chessk.base.AppResult
 import com.techullurgy.chessk.data.api.ChessKApi
-import com.techullurgy.chessk.data.api.WebsocketSession
 import com.techullurgy.chessk.data.api.utils.postWithBody
 import com.techullurgy.chessk.data.api.utils.postWithoutBody
 import com.techullurgy.chessk.data.api.utils.safeNetworkCall
@@ -15,7 +14,6 @@ import com.techullurgy.chessk.shared.dto.GameRoomResponse
 import com.techullurgy.chessk.shared.dto.JoinRoomRequest
 import com.techullurgy.chessk.shared.dto.JoinRoomResponse
 import com.techullurgy.chessk.shared.endpoints.CreateRoomEndpoint
-import com.techullurgy.chessk.shared.endpoints.GameWebsocketEndpoint
 import com.techullurgy.chessk.shared.endpoints.GetCreatedRoomsEndpoint
 import com.techullurgy.chessk.shared.endpoints.GetJoinedRoomsEndpoint
 import com.techullurgy.chessk.shared.endpoints.JoinRoomEndpoint
@@ -25,13 +23,12 @@ import com.techullurgy.chessk.shared.endpoints.RegisterUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.StartGameEndpoint
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
 
-class KtorChessKApi(
+internal class KtorChessKApi(
     private val httpClient: HttpClient,
-    private val wsClient: HttpClient,
+    val wsClient: HttpClient,
     private val noAuthHttpClient: HttpClient
 ) : ChessKApi {
     override fun registerUser(body: AuthRegisterRequest): Flow<AppResult<AuthSuccessResponse>> =
@@ -94,10 +91,5 @@ class KtorChessKApi(
     override fun leaveRoom(roomId: String) = safeNetworkCall {
         val response = httpClient.postWithoutBody(url = LeaveRoomEndpoint(roomId).actualUrl)
         response.body<Unit>()
-    }
-
-    override suspend fun connectGameWebsocket(): WebsocketSession {
-        val socket = wsClient.webSocketSession(GameWebsocketEndpoint.actualUrl)
-        return KtorWebsocketSession(socket)
     }
 }

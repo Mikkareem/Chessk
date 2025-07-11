@@ -49,7 +49,13 @@ include(":base")
 
 include(":data:api")
 include(":data:database")
+include(":data:datastore")
+include(":data:remote")
+include(":data:websockets")
 
 include(":core:constants")
 include(":core:ui:photo_picker")
 include(":core:ui:snackbar")
+
+include(":feature:game:data")
+include(":feature:game:models")

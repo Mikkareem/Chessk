@@ -11,8 +11,8 @@ import com.techullurgy.chessk.shared.endpoints.RegisterUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.StartGameEndpoint
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.baseEventJson
-import com.techullurgy.chessk.shared.models.GameRoom
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.GameRoomShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import com.techullurgy.chessk.shared.utils.SharedConstants
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -101,27 +101,27 @@ object AppLogicTestRunner {
         val room = apiClient1.post(CreateRoomEndpoint.actualUrl) {
             contentType(ContentType.Application.Json)
             setBody(
-                GameRoom(
+                GameRoomShared(
                     roomId = "",
                     roomName = "Test Room Championship",
                     roomDescription = "Test Room Championship Description",
                     createdBy = ""
                 )
             )
-        }.body<GameRoom>()
+        }.body<GameRoomShared>()
 
         val assignedColors = supervisorScope {
             val deferred1 = async {
                 apiClient1.post(JoinRoomEndpoint.actualUrl) {
                     contentType(ContentType.Application.Json)
-                    setBody(JoinRoomRequest(room.roomId, PieceColor.White))
+                    setBody(JoinRoomRequest(room.roomId, PieceColorShared.White))
                 }.body<JoinRoomResponse>()
             }
             delay(1000)
             val deferred2 = async {
                 apiClient2.post(JoinRoomEndpoint.actualUrl) {
                     contentType(ContentType.Application.Json)
-                    setBody(JoinRoomRequest(room.roomId, PieceColor.White))
+                    setBody(JoinRoomRequest(room.roomId, PieceColorShared.White))
                 }.body<JoinRoomResponse>()
             }
 
@@ -158,8 +158,10 @@ object AppLogicTestRunner {
                 apiClient1.post(StartGameEndpoint(room.roomId).actualUrl)
             }
 
-            val whiteSocket = if (assignedColors.first() == PieceColor.White) socket1 else socket2
-            val blackSocket = if (assignedColors.first() == PieceColor.White) socket2 else socket1
+            val whiteSocket =
+                if (assignedColors.first() == PieceColorShared.White) socket1 else socket2
+            val blackSocket =
+                if (assignedColors.first() == PieceColorShared.White) socket2 else socket1
 
             block(whiteSocket, blackSocket, room.roomId)
 

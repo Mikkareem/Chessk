@@ -1,24 +1,26 @@
 package com.techullurgy.chessk.shared.utils
 
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.Piece
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceShared
 import kotlinx.serialization.json.Json
 
-fun String.toBoardPieces(): List<Piece?> = Json.decodeFromString(BoardSerializer, "\"$this\"")
+fun String.toBoardPieces(): List<PieceShared?> = Json.decodeFromString(BoardSerializer, "\"$this\"")
 
-fun String.toCutPieces(): Set<Piece>? = Json.decodeFromString(CutPiecesSerializer, "\"$this\"")
+fun String.toCutPieces(): Set<PieceShared>? =
+    Json.decodeFromString(CutPiecesSerializer, "\"$this\"")
 
-fun String.toMove(): Move? = Json.decodeFromString(MoveSerializer, "\"$this\"")
+fun String.toMove(): MoveShared? = Json.decodeFromString(MoveSerializer, "\"$this\"")
 
-fun String.toMoves(): List<Move>? = Json.decodeFromString(MovesSerializer, "\"$this\"")
+fun String.toMoves(): List<MoveShared>? = Json.decodeFromString(MovesSerializer, "\"$this\"")
 
-fun List<Piece?>.toBoardPiecesString(): String =
+fun List<PieceShared?>.toBoardPiecesString(): String =
     Json.encodeToString(BoardSerializer, this).removeSurrounding("\"")
 
-fun Set<Piece>.toCutPiecesString(): String =
+fun Set<PieceShared>.toCutPiecesString(): String =
     Json.encodeToString(CutPiecesSerializer, this).removeSurrounding("\"")
 
-fun Move.toMoveString(): String = Json.encodeToString(MoveSerializer, this).removeSurrounding("\"")
+fun MoveShared.toMoveString(): String =
+    Json.encodeToString(MoveSerializer, this).removeSurrounding("\"")
 
-fun List<Move>.toMovesString(): String =
+fun List<MoveShared>.toMovesString(): String =
     Json.encodeToString(MovesSerializer, this).removeSurrounding("\"")

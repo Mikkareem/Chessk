@@ -3,15 +3,20 @@ plugins {
 }
 
 kotlin {
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
+
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.database)
-            implementation(projects.core.constants)
-            implementation(projects.feature.game.domain)
-
-            implementation(libs.ktor.client.core)
             implementation(libs.koin.core)
-            implementation(libs.kotlinx.serialization.json)
+
+            implementation(projects.data.database)
+            implementation(projects.data.remote)
+            implementation(projects.data.websockets)
+
+            api(projects.feature.game.models)
         }
     }
 }

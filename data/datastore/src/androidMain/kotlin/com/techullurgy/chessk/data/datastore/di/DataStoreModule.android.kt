@@ -1,0 +1,12 @@
+package com.techullurgy.chessk.data.datastore.di
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.techullurgy.chessk.data.datastore.createAndroidDataStore
+import org.koin.core.module.Module
+import org.koin.dsl.module
+
+actual val platformDataStoreModule: Module = module {
+    single<DataStore<Preferences>> { createAndroidDataStore(get<Context>()) }
+}

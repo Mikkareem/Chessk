@@ -20,6 +20,7 @@ room = "2.7.2"
 sqlite = "2.5.2"
 navigation = "2.9.0-beta03"
 serialization = "1.9.0"
+datastore = "1.1.7"
 koin = "4.1.0"
 ktor = "3.2.1"
 mockk = "1.14.4"
@@ -48,6 +49,9 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
@@ -92,6 +96,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 
 [bundles]
 koin = ["koin-compose", "koin-compose-viewmodel"]
+datastore = ["datastore", "datastore-preferences"]
 ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-websockets", "ktor-client-content-negotiation", "ktor-serialization-json"]
 ktor-server = ["ktor-server-core", "ktor-server-websockets", "ktor-server-content-negotiation", "logback-classic", "ktor-serialization-json", "ktor-server-netty", "ktor-server-sessions", "ktor-server-config-yaml"]
 

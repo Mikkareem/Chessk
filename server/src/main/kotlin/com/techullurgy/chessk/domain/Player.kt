@@ -2,7 +2,7 @@ package com.techullurgy.chessk.domain
 
 import com.techullurgy.chessk.gameServer
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import io.ktor.server.websocket.sendSerialized
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.minutes
 
 data class Player(
     val user: User,
-    val colorAssigned: PieceColor,
+    val colorAssigned: PieceColorShared,
     val roomId: String,
 ) {
     var timeLeft: Duration = 30.minutes

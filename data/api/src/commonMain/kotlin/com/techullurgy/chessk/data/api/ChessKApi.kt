@@ -27,6 +27,4 @@ interface ChessKApi {
     fun startGame(roomId: String): Flow<AppResult<Unit>>
 
     fun leaveRoom(roomId: String): Flow<AppResult<Unit>>
-
-    suspend fun connectGameWebsocket(): WebsocketSession
 }

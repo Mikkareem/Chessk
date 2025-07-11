@@ -13,8 +13,8 @@ import com.techullurgy.chessk.data.database.models.MemberEntity
 import com.techullurgy.chessk.data.database.models.TimerEntity
 import com.techullurgy.chessk.data.database.models.projections.GameDetailedProjection
 import com.techullurgy.chessk.data.database.models.projections.GameHeaderProjection
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -85,8 +85,8 @@ interface GameDao {
         roomId: String,
         board: BoardPieces,
         cutPieces: CutPieces?,
-        lastMove: Move?,
-        currentPlayer: PieceColor,
+        lastMove: MoveShared?,
+        currentPlayer: PieceColorShared,
         kingInCheckIndex: Int? = null
     )
 
@@ -97,7 +97,7 @@ interface GameDao {
             WHERE roomId = :roomId
         """
     )
-    suspend fun updateAssignedColor(color: PieceColor, roomId: String)
+    suspend fun updateAssignedColor(color: PieceColorShared, roomId: String)
 
     @Query(
         """
@@ -110,7 +110,7 @@ interface GameDao {
     suspend fun updateAvailableMoves(
         roomId: String,
         selectedIndex: Int,
-        availableMoves: List<Move>?
+        availableMoves: List<MoveShared>?
     )
 
     @Query(
@@ -152,7 +152,7 @@ interface GameDao {
     suspend fun gameStartedUpdate(
         roomId: String,
         members: List<MemberEntity>,
-        assignedColor: PieceColor
+        assignedColor: PieceColorShared
     ) {
         updateAssignedColor(assignedColor, roomId)
         members.forEach { updateMember(it) }

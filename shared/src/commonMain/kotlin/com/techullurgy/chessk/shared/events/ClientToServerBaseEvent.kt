@@ -1,6 +1,6 @@
 package com.techullurgy.chessk.shared.events
 
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -23,7 +23,7 @@ data class Disconnected(
 @SerialName(BaseEventConstants.TYPE_PIECE_MOVE)
 data class PieceMove(
     val roomId: String,
-    val color: PieceColor,
+    val color: PieceColorShared,
     val from: Int,
     val to: Int
 ): ClientToServerBaseEvent
@@ -32,7 +32,7 @@ data class PieceMove(
 @SerialName(BaseEventConstants.TYPE_CELL_SELECTION)
 data class CellSelection(
     val roomId: String,
-    val color: PieceColor,
+    val color: PieceColorShared,
     val selectedIndex: Int
 ): ClientToServerBaseEvent
 

@@ -1,9 +1,9 @@
 package com.techullurgy.chessk.shared.events
 
-import com.techullurgy.chessk.shared.models.Member
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.Piece
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MemberShared
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
+import com.techullurgy.chessk.shared.models.PieceShared
 import com.techullurgy.chessk.shared.utils.BoardSerializer
 import com.techullurgy.chessk.shared.utils.CutPiecesSerializer
 import com.techullurgy.chessk.shared.utils.MoveSerializer
@@ -27,7 +27,7 @@ data class TimerUpdate(
 data class SelectionResult(
     val roomId: String,
     @Serializable(with = MovesSerializer::class)
-    val availableMoves: List<Move>?,
+    val availableMoves: List<MoveShared>?,
     val selectedIndex: Int
 ): ServerToClientBaseEvent
 
@@ -36,12 +36,12 @@ data class SelectionResult(
 data class GameUpdate(
     val roomId: String,
     @Serializable(with = BoardSerializer::class)
-    val board: List<Piece?>,
-    val currentTurn: PieceColor,
+    val board: List<PieceShared?>,
+    val currentTurn: PieceColorShared,
     @Serializable(with = MoveSerializer::class)
-    val lastMove: Move?,
+    val lastMove: MoveShared?,
     @Serializable(with = CutPiecesSerializer::class)
-    val cutPieces: Set<Piece>?,
+    val cutPieces: Set<PieceShared>?,
     val kingInCheckIndex: Int?,
     val gameStarted: Boolean
 ): ServerToClientBaseEvent
@@ -50,8 +50,8 @@ data class GameUpdate(
 @SerialName(BaseEventConstants.TYPE_GAME_STARTED)
 data class GameStarted(
     val roomId: String,
-    val members: List<Member>,
-    val assignedColor: PieceColor,
+    val members: List<MemberShared>,
+    val assignedColor: PieceColorShared,
 ): ServerToClientBaseEvent
 
 @Serializable

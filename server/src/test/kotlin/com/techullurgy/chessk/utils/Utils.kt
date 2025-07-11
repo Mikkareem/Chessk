@@ -6,14 +6,14 @@ import com.techullurgy.chessk.shared.events.ResetSelection
 import com.techullurgy.chessk.shared.models.Bishop
 import com.techullurgy.chessk.shared.models.King
 import com.techullurgy.chessk.shared.models.Knight
-import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.models.MoveShared
 import com.techullurgy.chessk.shared.models.Pawn
-import com.techullurgy.chessk.shared.models.Piece
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
+import com.techullurgy.chessk.shared.models.PieceShared
 import com.techullurgy.chessk.shared.models.Queen
 import com.techullurgy.chessk.shared.models.Rook
 
-internal fun interleaveMoves(moves: List<Move>, roomId: String): List<TestEventData> {
+internal fun interleaveMoves(moves: List<MoveShared>, roomId: String): List<TestEventData> {
     val distributed = distributeMoves(moves, roomId)
     return buildList {
         val maxSize = maxOf(distributed.first.size, distributed.second.size)
@@ -25,11 +25,11 @@ internal fun interleaveMoves(moves: List<Move>, roomId: String): List<TestEventD
 }
 
 internal fun distributeMoves(
-    moves: List<Move>,
+    moves: List<MoveShared>,
     roomId: String
 ): Pair<List<TestEventData>, List<TestEventData>> {
     var board = initialBoard
-    var cutPieces = hashSetOf<Piece>()
+    var cutPieces = hashSetOf<PieceShared>()
 
     val events = moves
         .mapIndexed { index, m ->
@@ -60,8 +60,8 @@ internal fun distributeMoves(
     val first = events.filter {
         val k = it.events.first()
         when (k) {
-            is CellSelection -> k.color == PieceColor.White
-            is PieceMove -> k.color == PieceColor.White
+            is CellSelection -> k.color == PieceColorShared.White
+            is PieceMove -> k.color == PieceColorShared.White
             is ResetSelection -> TODO()
             else -> TODO()
         }
@@ -70,8 +70,8 @@ internal fun distributeMoves(
     val second = events.filter {
         val k = it.events.first()
         when (k) {
-            is CellSelection -> k.color == PieceColor.Black
-            is PieceMove -> k.color == PieceColor.Black
+            is CellSelection -> k.color == PieceColorShared.Black
+            is PieceMove -> k.color == PieceColorShared.Black
             is ResetSelection -> TODO()
             else -> TODO()
         }
@@ -80,33 +80,34 @@ internal fun distributeMoves(
     return first to second
 }
 
-private fun List<Piece?>.afterMove(move: Move): List<Piece?> = this.toMutableList().apply {
+private fun List<PieceShared?>.afterMove(move: MoveShared): List<PieceShared?> =
+    this.toMutableList().apply {
     this[move.to] = this[move.from]
     this[move.from] = null
 }
 
-private fun List<Piece?>.afterMoveCutPiece(move: Move): Piece? = this[move.to]
+private fun List<PieceShared?>.afterMoveCutPiece(move: MoveShared): PieceShared? = this[move.to]
 
 private val initialBoard = listOf(
-    Rook(PieceColor.Black),
-    Knight(PieceColor.Black),
-    Bishop(PieceColor.Black),
-    Queen(PieceColor.Black),
-    King(PieceColor.Black),
-    Bishop(PieceColor.Black),
-    Knight(PieceColor.Black),
-    Rook(PieceColor.Black)
+    Rook(PieceColorShared.Black),
+    Knight(PieceColorShared.Black),
+    Bishop(PieceColorShared.Black),
+    Queen(PieceColorShared.Black),
+    King(PieceColorShared.Black),
+    Bishop(PieceColorShared.Black),
+    Knight(PieceColorShared.Black),
+    Rook(PieceColorShared.Black)
 ) +
-        List(8) { Pawn(PieceColor.Black) } +
+        List(8) { Pawn(PieceColorShared.Black) } +
         List(32) { null } +
-        List(8) { Pawn(PieceColor.White) } +
+        List(8) { Pawn(PieceColorShared.White) } +
         listOf(
-            Rook(PieceColor.White),
-            Knight(PieceColor.White),
-            Bishop(PieceColor.White),
-            Queen(PieceColor.White),
-            King(PieceColor.White),
-            Bishop(PieceColor.White),
-            Knight(PieceColor.White),
-            Rook(PieceColor.White)
+            Rook(PieceColorShared.White),
+            Knight(PieceColorShared.White),
+            Bishop(PieceColorShared.White),
+            Queen(PieceColorShared.White),
+            King(PieceColorShared.White),
+            Bishop(PieceColorShared.White),
+            Knight(PieceColorShared.White),
+            Rook(PieceColorShared.White)
         )

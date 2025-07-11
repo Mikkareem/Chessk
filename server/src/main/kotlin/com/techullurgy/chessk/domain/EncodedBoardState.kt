@@ -1,17 +1,17 @@
 package com.techullurgy.chessk.domain
 
 import com.techullurgy.chessk.shared.events.GameUpdate
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.Piece
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
+import com.techullurgy.chessk.shared.models.PieceShared
 
 data class EncodedBoardState(
     val roomId: String,
-    val board: List<Piece?>,
-    val cutPieces: Set<Piece>?,
-    val currentTurn: PieceColor,
+    val board: List<PieceShared?>,
+    val cutPieces: Set<PieceShared>?,
+    val currentTurn: PieceColorShared,
     val kingInCheckIndex: Int?,
-    val lastMove: Move?,
+    val lastMove: MoveShared?,
     val gameStarted: Boolean
 )
 

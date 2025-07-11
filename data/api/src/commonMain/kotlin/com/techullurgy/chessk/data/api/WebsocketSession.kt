@@ -1,15 +1,10 @@
 package com.techullurgy.chessk.data.api
 
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.Flow
 
-interface WebsocketSession {
-    val incoming: ReceiveChannel<WebsocketFrame>
-    val outgoing: SendChannel<WebsocketFrame>
-
+interface WebsocketSession<SC, CS> {
     val isActive: Boolean
-
-    suspend fun sendSerialized(value: Any)
+    val incoming: Flow<SC?>
 
     suspend fun close()
 }

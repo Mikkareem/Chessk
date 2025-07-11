@@ -1,95 +1,147 @@
 package com.techullurgy.chessk.feature.game.data
 
-import com.techullurgy.chessk.database.models.MemberEntity
-import com.techullurgy.chessk.database.models.TimerEntity
-import com.techullurgy.chessk.feature.game.data.api.GameApiDataSource
-import com.techullurgy.chessk.feature.game.data.db.GameDbDataSource
-import com.techullurgy.chessk.feature.game.domain.events.GameStartedEvent
-import com.techullurgy.chessk.feature.game.domain.events.GameUpdateEvent
-import com.techullurgy.chessk.feature.game.domain.events.ResetSelectionDoneEvent
-import com.techullurgy.chessk.feature.game.domain.events.SelectionResultEvent
-import com.techullurgy.chessk.feature.game.domain.events.ServerGameEvent
-import com.techullurgy.chessk.feature.game.domain.events.TimerUpdateEvent
+import com.techullurgy.chessk.base.AppResult
+import com.techullurgy.chessk.base.AppResultFailureException
+import com.techullurgy.chessk.base.takeSuccessResult
+import com.techullurgy.chessk.data.database.DatabaseDataSource
+import com.techullurgy.chessk.data.remote.RemoteDataSource
+import com.techullurgy.chessk.data.websockets.WebsocketDataSource
+import com.techullurgy.chessk.feature.game.data.mappers.toGameEntity
+import com.techullurgy.chessk.feature.game.data.mappers.toMemberEntities
+import com.techullurgy.chessk.feature.game.models.BrokerEvent
+import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
+import com.techullurgy.chessk.shared.events.GameStarted
+import com.techullurgy.chessk.shared.events.GameUpdate
+import com.techullurgy.chessk.shared.events.ResetSelectionDone
+import com.techullurgy.chessk.shared.events.SelectionResult
+import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
+import com.techullurgy.chessk.shared.events.TimerUpdate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 
 internal class GameRoomMessageBroker(
-    private val gameDbDataSource: GameDbDataSource,
-    private val gameApiDataSource: GameApiDataSource,
-) {
-    fun observeWebsocketConnection() =
-        observeDesiredGameEntities()
-            .transform {
-                if(!it.isEmpty()) {
-                    if(!gameApiDataSource.isSocketActive) {
-                        emit(true)
-                    }
-                } else {
-                    if(gameApiDataSource.isSocketActive) {
-                        emit(false)
-                    }
-                }
-            }
-            .distinctUntilChanged()
-            .onEach {
-                if(it) {
-                    gameApiDataSource.startSession()
-                } else {
-                    gameApiDataSource.stopSession()
-                }
-            }
+    private val wsDataSource: WebsocketDataSource<ServerToClientBaseEvent, ClientToServerBaseEvent>,
+    private val dbDataSource: DatabaseDataSource,
+    private val remoteDataSource: RemoteDataSource,
+    scope: CoroutineScope
+) : MessageBroker<BrokerEvent> {
+    private val wsEvents = wsDataSource.eventsFlow
 
-    fun observeAndUpdateGameEventDatabase() =
-        gameApiDataSource.gameEventsFlow
-            .transform {
-                if(it is ServerGameEvent) {
-                    when(it) {
-                        is GameStartedEvent -> {
-                            gameDbDataSource.gameStartedUpdate(
-                                roomId = it.roomId,
-                                members = it.members.map { member ->
-                                    MemberEntity(
-                                        roomId = it.roomId,
-                                        name = member.name,
-                                        profilePicUrl = member.profilePicUrl,
-                                        assignedColor = member.assignedColor,
-                                        userId = member.userId
-                                    )
-                                },
-                                assignedColor = it.assignedColor
-                            )
-                        }
-                        is GameUpdateEvent -> {
-                            gameDbDataSource.updateGame(
-                                roomId = it.roomId,
-                                board = it.board,
-                                lastMove = it.lastMove,
-                                currentPlayer = it.currentTurn,
-                                cutPieces = it.cutPieces,
-                                kingInCheckIndex = it.kingInCheckIndex,
-                            )
-                        }
-                        is ResetSelectionDoneEvent -> gameDbDataSource.resetSelection(roomId = it.roomId)
-                        is SelectionResultEvent -> gameDbDataSource.updateAvailableMoves(
-                            roomId = it.roomId,
-                            selectedIndex = it.selectedIndex,
-                            availableMoves = it.availableMoves
-                        )
-                        is TimerUpdateEvent -> gameDbDataSource.updateTimer(
-                            TimerEntity(
-                                roomId = it.roomId,
-                                whiteTime = it.whiteTime,
-                                blackTime = it.blackTime
-                            )
-                        )
-                    }
-                } else {
-                    emit(it)
+    private val isGameRoomsAvailable = dbDataSource.isGameRoomsAvailable()
+
+    private val connectable = MutableStateFlow<Boolean?>(null)
+
+    private val retryChannel: Channel<Unit> = Channel(capacity = Channel.CONFLATED)
+    private val refreshChannel: Channel<Unit> = Channel(capacity = Channel.CONFLATED)
+
+    private val _brokerEventsFlow = channelFlow {
+        launch {
+            refreshChannel.receiveAsFlow()
+                .onStart {
+                    send(BrokerEvent.BrokerRefreshingEvent)
+                    fetchAnyJoinedRoomsAndStoreLocally()
+                    send(BrokerEvent.BrokerRefreshedEvent)
+                }
+                .collectLatest {
+                    send(BrokerEvent.BrokerRefreshingEvent)
+                    fetchAnyJoinedRoomsAndStoreLocally()
+                    send(BrokerEvent.BrokerRefreshedEvent)
+                }
+        }
+
+        launch {
+            retryChannel.receiveAsFlow().collectLatest {
+                if (connectable.value == true) {
+                    send(BrokerEvent.BrokerRetryingEvent)
+                    wsDataSource.startSession()
+                    send(BrokerEvent.BrokerRetriedEvent)
                 }
             }
+        }
 
-    private fun observeDesiredGameEntities() =
-        gameDbDataSource.observeGamesList()
-            .distinctUntilChanged()
+        launch {
+            isGameRoomsAvailable.collect { available ->
+                if (available) {
+                    connectable.value = true
+                    wsDataSource.startSession()
+                } else {
+                    connectable.value = false
+                    wsDataSource.stopSession()
+                }
+            }
+        }
+
+        launch {
+            wsEvents.collect { result ->
+                when (result) {
+                    AppResult.Failure -> send(BrokerEvent.BrokerNotConnectedEvent)
+                    AppResult.Loading -> send(BrokerEvent.BrokerLoadingEvent)
+                    is AppResult.Success<ServerToClientBaseEvent> -> {
+                        send(BrokerEvent.BrokerConnectedEvent)
+                        with(dbDataSource) {
+                            when (result.data) {
+                                is GameStarted -> TODO()
+                                is GameUpdate -> TODO()
+                                is ResetSelectionDone -> TODO()
+                                is SelectionResult -> TODO()
+                                is TimerUpdate -> TODO()
+                            }
+                        }
+                    }
+
+                    is AppResult.FailureWithException -> send(BrokerEvent.BrokerNotConnectedEvent)
+                }
+            }
+        }
+
+        awaitClose {
+            connectable.value = null
+        }
+    }
+
+    override val brokerEventsFlow = _brokerEventsFlow
+        .distinctUntilChanged()
+        .onStart {
+            dbDataSource.invalidateGameRooms()
+        }
+        .onCompletion {
+            dbDataSource.invalidateGameRooms()
+        }
+        .shareIn(
+            scope = scope,
+            started = SharingStarted.WhileSubscribed(5000)
+        )
+
+    override val isConnected = wsDataSource.isConnected
+
+    override fun retry() {
+        retryChannel.trySend(Unit)
+    }
+
+    override fun refresh() {
+        refreshChannel.trySend(Unit)
+    }
+
+    private suspend fun fetchAnyJoinedRoomsAndStoreLocally() {
+        try {
+            val roomsResponse = remoteDataSource.fetchAnyJoinedRoomsAvailable().takeSuccessResult()
+            val gameEntities = roomsResponse.map { it.toGameEntity() }
+            val memberEntities = roomsResponse.map { it.toMemberEntities() }
+
+            dbDataSource.saveJoinedRoomsDetails(gameEntities, memberEntities)
+        } catch (_: AppResultFailureException) {
+            println("Not able to fetch Joined Rooms")
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package com.techullurgy.chessk.data.database.models
 
 import androidx.room.Entity
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
 
 @Entity(primaryKeys = ["roomId", "name"])
 data class MemberEntity(
@@ -9,6 +9,6 @@ data class MemberEntity(
     val name: String,
     val userId: String,
     val profilePicUrl: String?,
-    val assignedColor: PieceColor,
+    val assignedColor: PieceColorShared,
     val isOwner: Boolean = false
 )

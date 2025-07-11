@@ -1,6 +1,6 @@
 package com.techullurgy.chessk.shared
 
-import com.techullurgy.chessk.shared.models.Move
+import com.techullurgy.chessk.shared.models.MoveShared
 import com.techullurgy.chessk.shared.utils.MoveSerializer
 import com.techullurgy.chessk.shared.utils.MovesSerializer
 import kotlinx.serialization.Serializable
@@ -12,8 +12,8 @@ class MoveSerializationTest {
     @Test
     fun testMovesSerialization() {
         val temp = Temp(
-            availableMoves = listOf(Move(1, 2), Move(3, 5)),
-            lastMove = Move(11, 22)
+            availableMoves = listOf(MoveShared(1, 2), MoveShared(3, 5)),
+            lastMove = MoveShared(11, 22)
         )
 
         val encoded = Json.encodeToString(Temp.serializer(), temp)
@@ -40,7 +40,7 @@ class MoveSerializationTest {
 @Serializable
 data class Temp(
     @Serializable(with = MovesSerializer::class)
-    val availableMoves: List<Move>?,
+    val availableMoves: List<MoveShared>?,
     @Serializable(with = MoveSerializer::class)
-    val lastMove: Move?
+    val lastMove: MoveShared?
 )

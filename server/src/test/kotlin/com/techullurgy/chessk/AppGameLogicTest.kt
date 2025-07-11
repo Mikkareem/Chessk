@@ -2,8 +2,8 @@ package com.techullurgy.chessk
 
 import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import com.techullurgy.chessk.utils.AppLogicTestRunner
 import com.techullurgy.chessk.utils.interleaveMoves
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
@@ -30,19 +30,19 @@ class AppGameLogicTest {
                 }
             ) { whiteSocket, blackSocket, roomId ->
                 val moves = listOf(
-                    Move(49, 33),
-                    Move(14, 30),
-                    Move(58, 40),
-                    Move(6, 21),
-                    Move(62, 45),
-                    Move(21, 27),
+                    MoveShared(49, 33),
+                    MoveShared(14, 30),
+                    MoveShared(58, 40),
+                    MoveShared(6, 21),
+                    MoveShared(62, 45),
+                    MoveShared(21, 27),
                 )
 
                 val interleaved = interleaveMoves(moves, roomId)
 
                 interleaved.forEach { eventData ->
                     when (eventData.getOwner()) {
-                        PieceColor.Black -> {
+                        PieceColorShared.Black -> {
                             eventData.events.forEach {
                                 blackSocket.sendWithRandomDelay(it) {
                                     println("Sending from 2: $it")
@@ -50,7 +50,7 @@ class AppGameLogicTest {
                             }
                         }
 
-                        PieceColor.White -> {
+                        PieceColorShared.White -> {
                             eventData.events.forEach {
                                 whiteSocket.sendWithRandomDelay(it) {
                                     println("Sending from 1: $it")

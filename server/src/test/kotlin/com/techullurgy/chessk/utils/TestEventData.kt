@@ -2,15 +2,15 @@ package com.techullurgy.chessk.utils
 
 import com.techullurgy.chessk.shared.events.CellSelection
 import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.Piece
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
+import com.techullurgy.chessk.shared.models.PieceShared
 
 data class TestEventDataResult(
-    val board: List<Piece?>,
-    val lastMove: Move? = null,
-    val currentPlayer: PieceColor? = null,
-    val cutPieces: Set<Piece> = emptySet()
+    val board: List<PieceShared?>,
+    val lastMove: MoveShared? = null,
+    val currentPlayer: PieceColorShared? = null,
+    val cutPieces: Set<PieceShared> = emptySet()
 ) {
     override fun toString(): String {
         val boardString = board.chunked(8).joinToString("\n|        ") {
@@ -39,5 +39,5 @@ data class TestEventData(
     val events: List<ClientToServerBaseEvent>,
     val result: TestEventDataResult
 ) {
-    fun getOwner(): PieceColor = (events.first() as CellSelection).color
+    fun getOwner(): PieceColorShared = (events.first() as CellSelection).color
 }

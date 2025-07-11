@@ -1,8 +1,8 @@
 package com.techullurgy.chessk.shared
 
 import com.techullurgy.chessk.shared.models.Pawn
-import com.techullurgy.chessk.shared.models.Piece
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
+import com.techullurgy.chessk.shared.models.PieceShared
 import com.techullurgy.chessk.shared.models.Rook
 import com.techullurgy.chessk.shared.utils.BoardSerializer
 import com.techullurgy.chessk.shared.utils.CutPiecesSerializer
@@ -17,16 +17,16 @@ class PieceSerializationTest {
 
         val game = Game(
             board = listOf(
-                Pawn(PieceColor.White),
-                Pawn(PieceColor.Black),
+                Pawn(PieceColorShared.White),
+                Pawn(PieceColorShared.Black),
                 null,
                 null,
-                Rook(PieceColor.White)
+                Rook(PieceColorShared.White)
             ),
             cutPieces = setOf(
-                Rook(PieceColor.Black),
-                Rook(PieceColor.Black),
-                Pawn(PieceColor.White)
+                Rook(PieceColorShared.Black),
+                Rook(PieceColorShared.Black),
+                Pawn(PieceColorShared.White)
             )
         )
 
@@ -43,11 +43,11 @@ class PieceSerializationTest {
     @Test
     fun testStandalonePiecesSerialization() {
         val board = listOf(
-            Pawn(PieceColor.White),
-            Pawn(PieceColor.Black),
+            Pawn(PieceColorShared.White),
+            Pawn(PieceColorShared.Black),
             null,
             null,
-            Rook(PieceColor.White)
+            Rook(PieceColorShared.White)
         )
         val expectedEncoded = "WP***BP***.***.***WR"
         val encoded = Json.encodeToString(BoardSerializer, board).removeSurrounding("\"")
@@ -60,7 +60,7 @@ class PieceSerializationTest {
 @Serializable
 data class Game(
     @Serializable(with = BoardSerializer::class)
-    val board: List<Piece?> = emptyList(),
+    val board: List<PieceShared?> = emptyList(),
     @Serializable(with = CutPiecesSerializer::class)
-    val cutPieces: Set<Piece>? = emptySet()
+    val cutPieces: Set<PieceShared>? = emptySet()
 )

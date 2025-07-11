@@ -22,7 +22,8 @@ import com.techullurgy.chessk.shared.endpoints.LoginUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.RegisterUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.StartGameEndpoint
 import com.techullurgy.chessk.shared.endpoints.UploadProfilePictureEndpoint
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MemberShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import com.techullurgy.chessk.shared.utils.SharedConstants
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
@@ -78,10 +79,17 @@ private fun Route.getCreatedRooms() {
         val clientId = call.parameters[SharedConstants.Parameters.CHESSK_CLIENT_ID_HEADER_KEY]!!
         val userId = userRepository.getUserByClientId(clientId)!!.userId
         val createdRooms = gameServer.getCreatedRoomsForUserId(userId).map {
+            val joinedUsers = it.getAssignedPlayers().map { player ->
+                MemberShared(
+                    name = player.user.userName,
+                    assignedColor = player.colorAssigned,
+                    userId = player.user.clientId,
+                    profilePicUrl = player.user.profilePicUrl
+                )
+            }
             GameRoomResponse(
                 room = it.toGameRoom(),
-                joinedUsers = it.getAssignedPlayers()
-                    .associate { player -> player.colorAssigned to player.user.clientId }
+                joinedUsers = joinedUsers
             )
         }
 
@@ -108,7 +116,7 @@ private fun Route.joinRoom() {
         val assignableColor = assignedPlayers
             .takeIf { it.size == 1 }
             ?.let {
-                if(it.first().colorAssigned == PieceColor.Black) PieceColor.White else PieceColor.Black
+                if (it.first().colorAssigned == PieceColorShared.Black) PieceColorShared.White else PieceColorShared.Black
             }
 
         val assignedColor = assignableColor ?: request.preferredColor
@@ -139,7 +147,20 @@ private fun Route.leaveRoom() {
 private fun Route.getJoinedRooms() {
     get(GetJoinedRoomsEndpoint.signature) {
         val clientId = call.parameters[SharedConstants.Parameters.CHESSK_CLIENT_ID_HEADER_KEY]!!
-        val associatedRooms = gameServer.getJoinedRoomsForClientId(clientId).map { it.toGameRoom() }
+        val associatedRooms = gameServer.getJoinedRoomsForClientId(clientId).map {
+            val joinedUsers = it.getAssignedPlayers().map { player ->
+                MemberShared(
+                    name = player.user.userName,
+                    assignedColor = player.colorAssigned,
+                    userId = player.user.clientId,
+                    profilePicUrl = player.user.profilePicUrl
+                )
+            }
+            GameRoomResponse(
+                room = it.toGameRoom(),
+                joinedUsers = joinedUsers
+            )
+        }
 
         call.respond(HttpStatusCode.OK, associatedRooms)
     }

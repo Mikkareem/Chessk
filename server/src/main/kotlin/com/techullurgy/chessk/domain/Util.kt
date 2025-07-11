@@ -1,6 +1,6 @@
 package com.techullurgy.chessk.domain
 
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.PieceColorShared
 
 val Int.row get() = this / 8
 val Int.column get() = this % 8
@@ -12,7 +12,7 @@ fun List<GamePiece?>.isEmptyCell(row: Int, column: Int): Boolean {
     return this[index] == null
 }
 
-fun List<GamePiece?>.canPlace(row: Int, column: Int, color: PieceColor): Boolean {
+fun List<GamePiece?>.canPlace(row: Int, column: Int, color: PieceColorShared): Boolean {
     val index = row rowAndColumn column
     return isEmptyCell(row, column) || this[index]?.pieceColor != color
 }

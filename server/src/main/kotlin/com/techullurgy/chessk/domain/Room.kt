@@ -7,10 +7,10 @@ import com.techullurgy.chessk.shared.events.ResetSelectionDone
 import com.techullurgy.chessk.shared.events.SelectionResult
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.TimerUpdate
-import com.techullurgy.chessk.shared.models.GameRoom
-import com.techullurgy.chessk.shared.models.Member
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.GameRoomShared
+import com.techullurgy.chessk.shared.models.MemberShared
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,7 +34,7 @@ class Room(
 
     private val game = Game(id, coroutineScope)
 
-    private val players = ConcurrentHashMap<PieceColor, Player>()
+    private val players = ConcurrentHashMap<PieceColorShared, Player>()
 
     private var timerJob: Job? = null
 
@@ -65,7 +65,7 @@ class Room(
 
         val availableIndices = game.cellSelectedForMove(data.selectedIndex)
         val availableMoves = availableIndices.map {
-            Move(data.selectedIndex, it)
+            MoveShared(data.selectedIndex, it)
         }
         sendToCurrentPlayer(SelectionResult(roomId = id, availableMoves = availableMoves, selectedIndex = data.selectedIndex))
     }
@@ -93,11 +93,11 @@ class Room(
         }
     }
 
-    private fun getGameStartedEvent(assignedColor: PieceColor) = GameStarted(
+    private fun getGameStartedEvent(assignedColor: PieceColorShared) = GameStarted(
         roomId = id,
         assignedColor = assignedColor,
         members = players.entries.map {
-            Member(
+            MemberShared(
                 name = it.value.user.userName,
                 assignedColor = it.key,
                 userId = it.value.user.userId,
@@ -116,8 +116,8 @@ class Room(
                 activePlayer.timeLeft -= 1.seconds
                 val timerUpdate = TimerUpdate(
                     roomId = id,
-                    whiteTime = if(activePlayer.colorAssigned == PieceColor.White) activePlayer.timeLeft.inWholeSeconds else inactivePlayer.timeLeft.inWholeSeconds,
-                    blackTime = if(activePlayer.colorAssigned == PieceColor.Black) activePlayer.timeLeft.inWholeSeconds else inactivePlayer.timeLeft.inWholeSeconds
+                    whiteTime = if (activePlayer.colorAssigned == PieceColorShared.White) activePlayer.timeLeft.inWholeSeconds else inactivePlayer.timeLeft.inWholeSeconds,
+                    blackTime = if (activePlayer.colorAssigned == PieceColorShared.Black) activePlayer.timeLeft.inWholeSeconds else inactivePlayer.timeLeft.inWholeSeconds
                 )
                 broadcast(timerUpdate)
                 delay(1000)
@@ -142,29 +142,31 @@ class Room(
 
     private suspend fun broadcast(event: ServerToClientBaseEvent) {
         supervisorScope {
-            launch { players[PieceColor.White]?.sendEvent(event) }
-            launch { players[PieceColor.Black]?.sendEvent(event) }
+            launch { players[PieceColorShared.White]?.sendEvent(event) }
+            launch { players[PieceColorShared.Black]?.sendEvent(event) }
         }
     }
 
     private fun sendToCurrentPlayer(event: ServerToClientBaseEvent) {
-        if(game.currentPlayerColor == PieceColor.White) {
+        if (game.currentPlayerColor == PieceColorShared.White) {
             whitePlayerSend(event)
         } else {
             blackPlayerSend(event)
         }
     }
 
-    private fun whitePlayerSend(event: ServerToClientBaseEvent) = players[PieceColor.White]?.sendEvent(event)
+    private fun whitePlayerSend(event: ServerToClientBaseEvent) =
+        players[PieceColorShared.White]?.sendEvent(event)
 
-    private fun blackPlayerSend(event: ServerToClientBaseEvent) = players[PieceColor.Black]?.sendEvent(event)
+    private fun blackPlayerSend(event: ServerToClientBaseEvent) =
+        players[PieceColorShared.Black]?.sendEvent(event)
 
     fun invalidateRoom() {
         coroutineScope.cancel()
     }
 }
 
-internal fun Room.toGameRoom() = GameRoom(
+internal fun Room.toGameRoom() = GameRoomShared(
     roomId = id,
     roomName = name,
     roomDescription = description,

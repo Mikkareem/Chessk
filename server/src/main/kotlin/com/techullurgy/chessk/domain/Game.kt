@@ -1,7 +1,7 @@
 package com.techullurgy.chessk.domain
 
-import com.techullurgy.chessk.shared.models.Move
-import com.techullurgy.chessk.shared.models.PieceColor
+import com.techullurgy.chessk.shared.models.MoveShared
+import com.techullurgy.chessk.shared.models.PieceColorShared
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +37,7 @@ class Game(
             initialValue = _boardState.value.encode()
         )
 
-    var currentPlayerColor: PieceColor = PieceColor.White
+    var currentPlayerColor: PieceColorShared = PieceColorShared.White
         private set
 
     var selectedIndexForMove: Int = -1
@@ -61,9 +61,10 @@ class Game(
             is GameRook -> currentPiece.copy(index = to)
         }
 
-        val oppositeColor = if(currentPlayerColor == PieceColor.White) PieceColor.Black else PieceColor.White
+        val oppositeColor =
+            if (currentPlayerColor == PieceColorShared.White) PieceColorShared.Black else PieceColorShared.White
         val kingInCheckPosition = checkForOppositeKingInCheck(oppositeColor)
-        val lastMove = Move(selectedIndexForMove, to)
+        val lastMove = MoveShared(selectedIndexForMove, to)
 
         val newBoard = _boardState.value.board.toMutableList().apply {
             this[selectedIndexForMove] = null
@@ -106,7 +107,7 @@ class Game(
         isGameStarted.value = true
     }
 
-    private fun checkForOppositeKingInCheck(oppositeColor: PieceColor): Int? {
+    private fun checkForOppositeKingInCheck(oppositeColor: PieceColorShared): Int? {
         val oppositeGameKingPosition = _boardState.value.board.filterIsInstance<GameKing>()
             .first { it.color == oppositeColor }.index
 
@@ -120,7 +121,7 @@ class Game(
         return null
     }
 
-    private fun checkForOppositeKingCheckMate(oppositeColor: PieceColor): Boolean {
+    private fun checkForOppositeKingCheckMate(oppositeColor: PieceColorShared): Boolean {
         _boardState.value.board.filterNotNull().filter { it.pieceColor == oppositeColor }
             .forEach {
                 if(it.getAvailableIndices(_boardState.value.board).isNotEmpty()) return false
@@ -130,7 +131,8 @@ class Game(
     }
 
     private fun changeTurnAndReset() {
-        currentPlayerColor = if (currentPlayerColor == PieceColor.White) PieceColor.Black else PieceColor.White
+        currentPlayerColor =
+            if (currentPlayerColor == PieceColorShared.White) PieceColorShared.Black else PieceColorShared.White
         selectedIndexForMove = -1
     }
 }
@@ -139,9 +141,9 @@ private data class BoardState(
     val roomId: String,
     val board: Board = initialBoard(),
     val cutPieces: CutPieces = emptyList(),
-    val currentTurn: PieceColor = PieceColor.White,
+    val currentTurn: PieceColorShared = PieceColorShared.White,
     val kingInCheckIndex: Int? = null,
-    val lastMove: Move? = null,
+    val lastMove: MoveShared? = null,
     val gameStarted: Boolean = false,
 )
 
@@ -159,27 +161,27 @@ private fun initialBoard(): Board = List(8 * 8) {
     when(it.row) {
         0 -> {
             when(it.column) {
-                0, 7 -> GameRook(it, PieceColor.White)
-                1, 6 -> GameKnight(it, PieceColor.White)
-                2, 5 -> GameBishop(it, PieceColor.White)
-                3 -> GameQueen(it, PieceColor.White)
-                4 -> GameKing(it, PieceColor.White)
+                0, 7 -> GameRook(it, PieceColorShared.White)
+                1, 6 -> GameKnight(it, PieceColorShared.White)
+                2, 5 -> GameBishop(it, PieceColorShared.White)
+                3 -> GameQueen(it, PieceColorShared.White)
+                4 -> GameKing(it, PieceColorShared.White)
                 else -> null
             }
         }
         1 -> {
-            GamePawn(it, PieceColor.White)
+            GamePawn(it, PieceColorShared.White)
         }
         6 -> {
-            GamePawn(it, PieceColor.Black)
+            GamePawn(it, PieceColorShared.Black)
         }
         7 -> {
             when(it.column) {
-                0, 7 -> GameRook(it, PieceColor.Black)
-                1, 6 -> GameKnight(it, PieceColor.Black)
-                2, 5 -> GameBishop(it, PieceColor.Black)
-                3 -> GameKing(it, PieceColor.Black)
-                4 -> GameQueen(it, PieceColor.Black)
+                0, 7 -> GameRook(it, PieceColorShared.Black)
+                1, 6 -> GameKnight(it, PieceColorShared.Black)
+                2, 5 -> GameBishop(it, PieceColorShared.Black)
+                3 -> GameKing(it, PieceColorShared.Black)
+                4 -> GameQueen(it, PieceColorShared.Black)
                 else -> null
             }
         }

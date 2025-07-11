@@ -4,7 +4,7 @@ import com.techullurgy.chessk.shared.events.ClientToServerBaseEvent
 import com.techullurgy.chessk.shared.events.EnterRoomHandshake
 import com.techullurgy.chessk.shared.events.ServerToClientBaseEvent
 import com.techullurgy.chessk.shared.events.baseEventJson
-import com.techullurgy.chessk.shared.models.GameRoom
+import com.techullurgy.chessk.shared.models.GameRoomShared
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.websocket.WebSockets
@@ -70,8 +70,8 @@ class WebsocketTesting {
                 val response = client1.post("/room/create") {
                     contentType(ContentType.Application.Json)
                     val roomModel = Json.encodeToString(
-                        GameRoom.serializer(),
-                        GameRoom(
+                        GameRoomShared.serializer(),
+                        GameRoomShared(
                             roomId = "",
                             roomName = "Test Room Championship",
                             roomDescription = "Test Room Championship Description",
@@ -84,7 +84,7 @@ class WebsocketTesting {
                 response.bodyAsText()
             }
 
-            val roomId = Json.decodeFromString<GameRoom>(deferred.await()).roomId
+            val roomId = Json.decodeFromString<GameRoomShared>(deferred.await()).roomId
 
             launch {
 //                client1.post("/room/$roomId/join") {
