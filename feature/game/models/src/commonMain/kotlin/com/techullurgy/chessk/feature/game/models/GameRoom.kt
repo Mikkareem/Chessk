@@ -13,5 +13,7 @@ data class GameRoom(
     val availableMoves: List<Move>? = null,
     val lastMove: Move? = null,
     val selectedIndex: Int = -1,
-    val kingInCheckIndex: Int? = null
+    val kingInCheckIndex: Int? = null,
+    val yourTime: Long = 0,
+    val opponentTime: Long = 0
 )

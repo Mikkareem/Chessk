@@ -1,7 +1,7 @@
 package com.techullurgy.chessk.data.database.converters
 
 import androidx.room.TypeConverter
-import com.techullurgy.chessk.database.models.BoardPieces
+import com.techullurgy.chessk.data.database.models.BoardPieces
 import com.techullurgy.chessk.shared.utils.toBoardPieces
 import com.techullurgy.chessk.shared.utils.toBoardPiecesString
 

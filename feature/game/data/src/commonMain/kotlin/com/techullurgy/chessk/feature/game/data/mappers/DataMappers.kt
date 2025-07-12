@@ -2,13 +2,27 @@ package com.techullurgy.chessk.feature.game.data.mappers
 
 import com.techullurgy.chessk.data.database.models.GameEntity
 import com.techullurgy.chessk.data.database.models.MemberEntity
+import com.techullurgy.chessk.data.database.models.TimerEntity
 import com.techullurgy.chessk.feature.game.models.GameRoom
 import com.techullurgy.chessk.feature.game.models.Member
+import com.techullurgy.chessk.feature.game.models.PieceColor
 import com.techullurgy.chessk.shared.dto.GameRoomResponse
 
-context(game: GameEntity, members: List<MemberEntity>)
-internal fun asGameRoom(): GameRoom {
-    val gameRoom = game.toGameRoom()
+context(game: GameEntity?, members: List<MemberEntity>, timer: TimerEntity?)
+internal fun asGameRoom(): GameRoom? {
+    if (game == null) return null
+    var gameRoom = game.toGameRoom()
+
+    val yourTime = timer?.let {
+        if (gameRoom.assignedColor == PieceColor.White) timer.whiteTime else timer.blackTime
+    } ?: 0L
+
+    val opponentTime = timer?.let {
+        if (gameRoom.assignedColor == PieceColor.White) timer.blackTime else timer.whiteTime
+    } ?: 0L
+
+    gameRoom = gameRoom.copy(yourTime = yourTime, opponentTime = opponentTime)
+
     return gameRoom.copy(members = members.map { it.toMember() })
 }
 

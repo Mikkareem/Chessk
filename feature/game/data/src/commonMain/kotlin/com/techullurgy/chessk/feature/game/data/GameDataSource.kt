@@ -2,34 +2,43 @@ package com.techullurgy.chessk.feature.game.data
 
 import com.techullurgy.chessk.data.database.DatabaseDataSource
 import com.techullurgy.chessk.feature.game.data.mappers.asGameRoom
+import com.techullurgy.chessk.feature.game.models.BrokerEvent
 import com.techullurgy.chessk.feature.game.models.GameRoom
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 interface GameDataSource {
+    val broker: MessageBroker<BrokerEvent>
 
     fun observeJoinedGames(): Flow<List<GameRoom>>
 
-    fun observeGame(roomId: String): Flow<GameRoom>
+    fun observeGame(roomId: String): Flow<GameRoom?>
 }
 
 internal class GameDataSourceImpl(
-    private val dbDataSource: DatabaseDataSource
+    private val dbDataSource: DatabaseDataSource,
+    override val broker: MessageBroker<BrokerEvent>
 ) : GameDataSource {
-    override fun observeGame(roomId: String): Flow<GameRoom> = dbDataSource.observeGame().map {
-        with(it.first) {
-            with(it.second) {
-                asGameRoom()
+
+    override fun observeGame(roomId: String): Flow<GameRoom?> =
+        dbDataSource.observeGame(roomId).map {
+            with(it.game) {
+                with(it.members) {
+                    with(it.timer) {
+                        asGameRoom()
+                    }
             }
         }
     }
 
     override fun observeJoinedGames(): Flow<List<GameRoom>> =
         dbDataSource.observeJoinedGamesList().map { list ->
-            list.map {
-                with(it.first) {
-                    with(it.second) {
-                        asGameRoom()
+            list.mapNotNull {
+                with(it.game) {
+                    with(it.members) {
+                        with(it.timer) {
+                            asGameRoom()
+                        }
                     }
                 }
             }

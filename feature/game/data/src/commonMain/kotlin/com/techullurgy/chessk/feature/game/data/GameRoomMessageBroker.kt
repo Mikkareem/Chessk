@@ -85,10 +85,9 @@ internal class GameRoomMessageBroker(
         launch {
             wsEvents.collect { result ->
                 when (result) {
-                    AppResult.Failure -> send(BrokerEvent.BrokerNotConnectedEvent)
+                    AppResult.Failure -> send(BrokerEvent.BrokerFailureEvent)
                     AppResult.Loading -> send(BrokerEvent.BrokerLoadingEvent)
-                    is AppResult.Success<ServerToClientBaseEvent> -> {
-                        send(BrokerEvent.BrokerConnectedEvent)
+                    is AppResult.Success<ServerToClientBaseEvent?> -> {
                         with(dbDataSource) {
                             when (result.data) {
                                 is GameStarted -> TODO()
@@ -96,11 +95,12 @@ internal class GameRoomMessageBroker(
                                 is ResetSelectionDone -> TODO()
                                 is SelectionResult -> TODO()
                                 is TimerUpdate -> TODO()
+                                null -> send(BrokerEvent.BrokerConnectedEvent)
                             }
                         }
                     }
 
-                    is AppResult.FailureWithException -> send(BrokerEvent.BrokerNotConnectedEvent)
+                    is AppResult.FailureWithException -> send(BrokerEvent.BrokerFailureEvent)
                 }
             }
         }

@@ -25,10 +25,12 @@ import kotlinx.coroutines.launch
 interface WebsocketDataSource<SC, CS> {
     val isConnected: StateFlow<Boolean>
 
-    val eventsFlow: SharedFlow<AppResult<SC>>
+    val eventsFlow: SharedFlow<AppResult<SC?>>
 
     fun startSession()
     fun stopSession()
+
+    fun send(e: CS)
 }
 
 internal open class ChessKWebsocketDataSource<SC, CS>(
@@ -45,7 +47,7 @@ internal open class ChessKWebsocketDataSource<SC, CS>(
 
     private var session: WebsocketSession<SC, CS>? = null
 
-    private val _eventsFlow = channelFlow<AppResult<SC>> {
+    private val _eventsFlow = channelFlow<AppResult<SC?>> {
         canConnectFlow
             .dropWhile { !it }
             .collectLatest { enabled ->
@@ -60,6 +62,7 @@ internal open class ChessKWebsocketDataSource<SC, CS>(
                         }
 
                         _isConnected.value = true
+                        send(AppResult.Success(null))
 
                         launch {
                             outgoingChannel.receiveAsFlow().collectLatest {
@@ -74,7 +77,6 @@ internal open class ChessKWebsocketDataSource<SC, CS>(
                         session?.close()
                         session = null
                         _isConnected.value = false
-                        send(AppResult.Failure)
                     }
                 }
             }
@@ -104,6 +106,10 @@ internal open class ChessKWebsocketDataSource<SC, CS>(
 
         outgoingChannel.close()
         canConnectFlow.value = false
+    }
+
+    override fun send(e: CS) {
+        outgoingChannel.trySend(e)
     }
 }
 

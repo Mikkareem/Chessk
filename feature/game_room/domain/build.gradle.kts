@@ -3,19 +3,11 @@ plugins {
 }
 
 kotlin {
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-
     sourceSets {
         commonMain.dependencies {
             implementation(libs.koin.core)
 
-            implementation(projects.data.database)
-            implementation(projects.data.remote)
-            implementation(projects.data.websockets)
-
+            implementation(projects.feature.game.data)
             implementation(projects.feature.game.models)
         }
     }

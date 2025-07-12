@@ -15,5 +15,5 @@ val featureGameDataModule = module {
 
     single<MessageBroker<BrokerEvent>> { GameRoomMessageBroker(get(), get(), get(), get()) }
 
-    single<GameDataSource> { GameDataSourceImpl(get()) }
+    single<GameDataSource> { GameDataSourceImpl(get(), get()) }
 }

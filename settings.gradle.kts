@@ -57,5 +57,8 @@ include(":core:constants")
 include(":core:ui:photo_picker")
 include(":core:ui:snackbar")
 
-include(":feature:game:data")
 include(":feature:game:models")
+include(":feature:game:data")
+
+include(":feature:game_room:domain")
+include(":feature:game_room:presentation")

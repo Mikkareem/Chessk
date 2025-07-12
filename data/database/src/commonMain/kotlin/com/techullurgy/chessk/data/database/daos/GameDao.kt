@@ -11,7 +11,6 @@ import com.techullurgy.chessk.data.database.models.CutPieces
 import com.techullurgy.chessk.data.database.models.GameEntity
 import com.techullurgy.chessk.data.database.models.MemberEntity
 import com.techullurgy.chessk.data.database.models.TimerEntity
-import com.techullurgy.chessk.data.database.models.projections.GameDetailedProjection
 import com.techullurgy.chessk.data.database.models.projections.GameHeaderProjection
 import com.techullurgy.chessk.shared.models.MoveShared
 import com.techullurgy.chessk.shared.models.PieceColorShared
@@ -21,14 +20,10 @@ import kotlinx.coroutines.flow.Flow
 interface GameDao {
     @Query("""
         SELECT DISTINCT g.roomId,
-                'People' AS roomName,
+                g.roomName,
                 COUNT(m.roomId) OVER(PARTITION BY m.roomId) AS membersCount,
-                CASE WHEN g.assignedColor = g.currentPlayer THEN true ELSE false END AS isMyTurn,
-                CASE WHEN g.assignedColor = 'White' THEN t.whiteTime ELSE t.blackTime END AS yourTime,
-                CASE WHEN g.assignedColor = 'White' THEN t.blackTime ELSE t.whiteTime END AS opponentTime
+                CASE WHEN g.assignedColor = g.currentPlayer THEN true ELSE false END AS isMyTurn
         FROM GameEntity g
-        LEFT JOIN TimerEntity t
-            ON (g.roomId = t.roomId)
         LEFT JOIN MemberEntity m
             ON (g.roomId = m.roomId)
     """)
@@ -36,23 +31,21 @@ interface GameDao {
 
     @Query("""
         SELECT g.roomId,
-            'People' AS roomName,
+            g.roomName,
+            g.roomDescription,
+            g.createdBy,
             g.assignedColor,
-            CASE WHEN g.assignedColor = g.currentPlayer THEN true ELSE false END AS isMyTurn,
+            g.currentPlayer,
             g.cutPieces,
             g.board,
             g.availableMoves,
             g.lastMove,
             g.selectedIndex,
-            g.kingInCheckIndex,
-            CASE WHEN g.assignedColor = 'White' THEN t.whiteTime ELSE t.blackTime END AS yourTime,
-            CASE WHEN g.assignedColor = 'White' THEN t.blackTime ELSE t.whiteTime END AS opponentTime
+            g.kingInCheckIndex
         FROM GameEntity g
-        LEFT JOIN TimerEntity t
-            ON (g.roomId = t.roomId)
         WHERE g.roomId = :roomId
     """)
-    fun observeGame(roomId: String): Flow<GameDetailedProjection?>
+    fun observeGame(roomId: String): Flow<GameEntity?>
 
     @Query("""
         SELECT * 
