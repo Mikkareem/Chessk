@@ -7,6 +7,7 @@ import com.techullurgy.chessk.feature.game.models.GameRoom
 import com.techullurgy.chessk.feature.game.models.Member
 import com.techullurgy.chessk.feature.game.models.PieceColor
 import com.techullurgy.chessk.shared.dto.GameRoomResponse
+import com.techullurgy.chessk.shared.models.MemberShared
 
 context(game: GameEntity?, members: List<MemberEntity>, timer: TimerEntity?)
 internal fun asGameRoom(): GameRoom? {
@@ -26,16 +27,8 @@ internal fun asGameRoom(): GameRoom? {
     return gameRoom.copy(members = members.map { it.toMember() })
 }
 
-internal fun GameRoomResponse.toMemberEntities(): List<MemberEntity> = joinedUsers.map {
-    MemberEntity(
-        roomId = room.roomId,
-        name = it.name,
-        userId = it.userId,
-        profilePicUrl = it.profilePicUrl,
-        assignedColor = it.assignedColor,
-        isOwner = it.userId == room.createdBy
-    )
-}
+internal fun GameRoomResponse.toMemberEntities(): List<MemberEntity> =
+    joinedUsers.map { it.toEntity() }
 
 internal fun GameRoomResponse.toGameEntity(): GameEntity = GameEntity(
     roomId = room.roomId,
@@ -44,11 +37,22 @@ internal fun GameRoomResponse.toGameEntity(): GameEntity = GameEntity(
     createdBy = room.createdBy
 )
 
+internal fun MemberShared.toEntity() = MemberEntity(
+    roomId = roomId,
+    name = name,
+    userId = userId,
+    profilePicUrl = profilePicUrl,
+    assignedColor = assignedColor,
+    isOwner = isOwner
+)
+
 private fun MemberEntity.toMember(): Member = Member(
+    roomId = roomId,
     name = name,
     assignedColor = assignedColor.toModel(),
     userId = userId,
-    profilePicUrl = profilePicUrl
+    profilePicUrl = profilePicUrl,
+    isOwner = isOwner
 )
 
 private fun GameEntity.toGameRoom() = GameRoom(

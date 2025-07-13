@@ -11,55 +11,21 @@ import com.techullurgy.chessk.data.database.models.CutPieces
 import com.techullurgy.chessk.data.database.models.GameEntity
 import com.techullurgy.chessk.data.database.models.MemberEntity
 import com.techullurgy.chessk.data.database.models.TimerEntity
-import com.techullurgy.chessk.data.database.models.projections.GameHeaderProjection
+import com.techullurgy.chessk.data.database.models.projections.GameWithMembersAndTimer
 import com.techullurgy.chessk.shared.models.MoveShared
 import com.techullurgy.chessk.shared.models.PieceColorShared
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GameDao {
-    @Query("""
-        SELECT DISTINCT g.roomId,
-                g.roomName,
-                COUNT(m.roomId) OVER(PARTITION BY m.roomId) AS membersCount,
-                CASE WHEN g.assignedColor = g.currentPlayer THEN true ELSE false END AS isMyTurn
-        FROM GameEntity g
-        LEFT JOIN MemberEntity m
-            ON (g.roomId = m.roomId)
-    """)
-    fun observeGamesList(): Flow<List<GameHeaderProjection>>
 
-    @Query("""
-        SELECT g.roomId,
-            g.roomName,
-            g.roomDescription,
-            g.createdBy,
-            g.assignedColor,
-            g.currentPlayer,
-            g.cutPieces,
-            g.board,
-            g.availableMoves,
-            g.lastMove,
-            g.selectedIndex,
-            g.kingInCheckIndex
-        FROM GameEntity g
-        WHERE g.roomId = :roomId
-    """)
-    fun observeGame(roomId: String): Flow<GameEntity?>
+    @Transaction
+    @Query("SELECT * FROM GameEntity")
+    fun observeGames(): Flow<List<GameWithMembersAndTimer>>
 
-    @Query("""
-        SELECT * 
-        FROM MemberEntity
-        WHERE roomId = :roomId
-    """)
-    fun observeMembers(
-        roomId: String
-    ): Flow<List<MemberEntity>>
-
-    @Query("""
-        SELECT * FROM TimerEntity WHERE roomId = :roomId
-    """)
-    fun observeTimerFor(roomId: String): Flow<TimerEntity?>
+    @Transaction
+    @Query("SELECT * FROM GameEntity Where roomId = :roomId")
+    fun observeGame(roomId: String): Flow<GameWithMembersAndTimer?>
 
     @Query(
         """

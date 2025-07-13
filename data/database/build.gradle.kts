@@ -20,9 +20,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.core.constants)
-
             implementation(libs.koin.core)
+
+            implementation(projects.core.constants)
+            implementation(projects.shared)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

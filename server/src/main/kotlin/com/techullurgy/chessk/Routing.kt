@@ -81,10 +81,12 @@ private fun Route.getCreatedRooms() {
         val createdRooms = gameServer.getCreatedRoomsForUserId(userId).map {
             val joinedUsers = it.getAssignedPlayers().map { player ->
                 MemberShared(
+                    roomId = player.roomId,
                     name = player.user.userName,
                     assignedColor = player.colorAssigned,
-                    userId = player.user.clientId,
-                    profilePicUrl = player.user.profilePicUrl
+                    userId = player.user.userId,
+                    profilePicUrl = player.user.profilePicUrl,
+                    isOwner = player.user.clientId == clientId
                 )
             }
             GameRoomResponse(
@@ -150,10 +152,12 @@ private fun Route.getJoinedRooms() {
         val associatedRooms = gameServer.getJoinedRoomsForClientId(clientId).map {
             val joinedUsers = it.getAssignedPlayers().map { player ->
                 MemberShared(
+                    roomId = player.roomId,
                     name = player.user.userName,
                     assignedColor = player.colorAssigned,
-                    userId = player.user.clientId,
-                    profilePicUrl = player.user.profilePicUrl
+                    userId = player.user.userId,
+                    profilePicUrl = player.user.profilePicUrl,
+                    isOwner = player.user.clientId == clientId
                 )
             }
             GameRoomResponse(

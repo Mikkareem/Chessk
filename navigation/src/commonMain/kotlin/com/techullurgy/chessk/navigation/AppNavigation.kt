@@ -3,10 +3,11 @@ package com.techullurgy.chessk.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.techullurgy.chessk.feature.game.api.navigation.gameNavigation
-import com.techullurgy.chessk.feature.user_details.api.navigation.UserDetails
-import com.techullurgy.chessk.feature.user_details.api.navigation.userDetailsNavigation
+import androidx.navigation.toRoute
+import com.techullurgy.chessk.feature.game_room.presentation.screens.GameRoomScreenRoot
+import com.techullurgy.chessk.feature.joined_rooms.presentation.screens.JoinedGamesScreenRoot
 
 @Composable
 fun AppNavigation(
@@ -17,9 +18,18 @@ fun AppNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = UserDetails
+        startDestination = JoinedGamesRoute
     ) {
-        userDetailsNavigation(navController)
-        gameNavigation(navController)
+        composable<JoinedGamesRoute> {
+            JoinedGamesScreenRoot(
+                onGameClick = {
+                    navController.navigate(GameRoomRoute(it))
+                }
+            )
+        }
+
+        composable<GameRoomRoute> {
+            GameRoomScreenRoot(it.toRoute<GameRoomRoute>().roomId)
+        }
     }
 }

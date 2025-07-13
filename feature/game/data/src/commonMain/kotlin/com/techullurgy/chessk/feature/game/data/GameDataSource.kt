@@ -22,17 +22,19 @@ internal class GameDataSourceImpl(
 
     override fun observeGame(roomId: String): Flow<GameRoom?> =
         dbDataSource.observeGame(roomId).map {
+            if (it == null) return@map null
             with(it.game) {
                 with(it.members) {
                     with(it.timer) {
                         asGameRoom()
                     }
+                }
             }
         }
-    }
+
 
     override fun observeJoinedGames(): Flow<List<GameRoom>> =
-        dbDataSource.observeJoinedGamesList().map { list ->
+        dbDataSource.observeGames().map { list ->
             list.mapNotNull {
                 with(it.game) {
                     with(it.members) {

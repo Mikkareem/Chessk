@@ -4,8 +4,10 @@ import com.techullurgy.chessk.base.AppResult
 import com.techullurgy.chessk.base.AppResultFailureException
 import com.techullurgy.chessk.base.takeSuccessResult
 import com.techullurgy.chessk.data.database.DatabaseDataSource
+import com.techullurgy.chessk.data.database.models.TimerEntity
 import com.techullurgy.chessk.data.remote.RemoteDataSource
 import com.techullurgy.chessk.data.websockets.WebsocketDataSource
+import com.techullurgy.chessk.feature.game.data.mappers.toEntity
 import com.techullurgy.chessk.feature.game.data.mappers.toGameEntity
 import com.techullurgy.chessk.feature.game.data.mappers.toMemberEntities
 import com.techullurgy.chessk.feature.game.models.BrokerEvent
@@ -89,12 +91,32 @@ internal class GameRoomMessageBroker(
                     AppResult.Loading -> send(BrokerEvent.BrokerLoadingEvent)
                     is AppResult.Success<ServerToClientBaseEvent?> -> {
                         with(dbDataSource) {
-                            when (result.data) {
-                                is GameStarted -> TODO()
-                                is GameUpdate -> TODO()
-                                is ResetSelectionDone -> TODO()
-                                is SelectionResult -> TODO()
-                                is TimerUpdate -> TODO()
+                            when (val data = result.data) {
+                                is GameStarted -> gameStartedUpdate(
+                                    data.roomId,
+                                    data.members.map { it.toEntity() },
+                                    data.assignedColor
+                                )
+
+                                is GameUpdate -> updateGame(
+                                    data.roomId,
+                                    data.board,
+                                    data.cutPieces,
+                                    data.lastMove,
+                                    data.currentTurn,
+                                    data.kingInCheckIndex
+                                )
+
+                                is ResetSelectionDone -> resetSelection(data.roomId)
+                                is SelectionResult -> updateAvailableMoves(
+                                    data.roomId,
+                                    data.selectedIndex,
+                                    data.availableMoves
+                                )
+
+                                is TimerUpdate -> updateTimer(
+                                    TimerEntity(data.roomId, data.whiteTime, data.blackTime)
+                                )
                                 null -> send(BrokerEvent.BrokerConnectedEvent)
                             }
                         }

@@ -49,17 +49,21 @@ internal fun MoveShared.toModel() = Move(from, to)
 internal fun Move.toShared() = MoveShared(from, to)
 
 internal fun MemberShared.toModel() = Member(
+    roomId = roomId,
     name = name,
     assignedColor = assignedColor.toModel(),
     userId = userId,
-    profilePicUrl = profilePicUrl
+    profilePicUrl = profilePicUrl,
+    isOwner = isOwner
 )
 
 internal fun Member.toShared() = MemberShared(
+    roomId = roomId,
     name = name,
     assignedColor = assignedColor.toShared(),
     userId = userId,
-    profilePicUrl = profilePicUrl
+    profilePicUrl = profilePicUrl,
+    isOwner = isOwner
 )
 
 internal fun GameRoomShared.toModel() = GameRoom(

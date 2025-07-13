@@ -59,6 +59,25 @@ include(":core:ui:snackbar")
 
 include(":feature:game:models")
 include(":feature:game:data")
+include(":feature:rooms:data")
+
+include(":feature:register:domain")
+include(":feature:register:presentation")
+
+include(":feature:login:domain")
+include(":feature:login:presentation")
+
+include(":feature:create_room:domain")
+include(":feature:create_room:presentation")
+
+include(":feature:created_rooms:domain")
+include(":feature:created_rooms:presentation")
+
+include(":feature:join_room:domain")
+include(":feature:join_room:presentation")
+
+include(":feature:joined_rooms:domain")
+include(":feature:joined_rooms:presentation")
 
 include(":feature:game_room:domain")
 include(":feature:game_room:presentation")

@@ -21,7 +21,7 @@ class ObservingGameUsecase(
         when (event) {
             BrokerEvent.BrokerConnectedEvent -> state.copy(isLoading = false)
             BrokerEvent.BrokerLoadingEvent -> state.copy(isLoading = true)
-            BrokerEvent.BrokerFailureEvent -> state.copy()
+            BrokerEvent.BrokerFailureEvent -> state.copy(isLoading = false)
             BrokerEvent.BrokerRefreshedEvent -> state.copy(isRefreshing = false)
             BrokerEvent.BrokerRefreshingEvent -> state.copy(isRefreshing = true)
             BrokerEvent.BrokerRetriedEvent -> state.copy(isRetrying = true)

@@ -1,0 +1,169 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "6ed4e3a58142546b3f8a656ef57d8f75",
+    "entities": [
+      {
+        "tableName": "GameEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`roomId` TEXT NOT NULL, `roomName` TEXT NOT NULL, `roomDescription` TEXT NOT NULL, `createdBy` TEXT NOT NULL, `board` TEXT NOT NULL, `assignedColor` TEXT, `currentPlayer` TEXT, `cutPieces` TEXT, `availableMoves` TEXT, `lastMove` TEXT, `selectedIndex` INTEGER NOT NULL, `kingInCheckIndex` INTEGER, PRIMARY KEY(`roomId`))",
+        "fields": [
+          {
+            "fieldPath": "roomId",
+            "columnName": "roomId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roomName",
+            "columnName": "roomName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "roomDescription",
+            "columnName": "roomDescription",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdBy",
+            "columnName": "createdBy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "board",
+            "columnName": "board",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignedColor",
+            "columnName": "assignedColor",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "currentPlayer",
+            "columnName": "currentPlayer",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "cutPieces",
+            "columnName": "cutPieces",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "availableMoves",
+            "columnName": "availableMoves",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastMove",
+            "columnName": "lastMove",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "selectedIndex",
+            "columnName": "selectedIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kingInCheckIndex",
+            "columnName": "kingInCheckIndex",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "roomId"
+          ]
+        }
+      },
+      {
+        "tableName": "MemberEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`roomId` TEXT NOT NULL, `name` TEXT NOT NULL, `userId` TEXT NOT NULL, `profilePicUrl` TEXT, `assignedColor` TEXT NOT NULL, `isOwner` INTEGER NOT NULL, PRIMARY KEY(`roomId`, `name`))",
+        "fields": [
+          {
+            "fieldPath": "roomId",
+            "columnName": "roomId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePicUrl",
+            "columnName": "profilePicUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "assignedColor",
+            "columnName": "assignedColor",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isOwner",
+            "columnName": "isOwner",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "roomId",
+            "name"
+          ]
+        }
+      },
+      {
+        "tableName": "TimerEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`roomId` TEXT NOT NULL, `whiteTime` INTEGER NOT NULL, `blackTime` INTEGER NOT NULL, PRIMARY KEY(`roomId`))",
+        "fields": [
+          {
+            "fieldPath": "roomId",
+            "columnName": "roomId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "whiteTime",
+            "columnName": "whiteTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blackTime",
+            "columnName": "blackTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "roomId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ed4e3a58142546b3f8a656ef57d8f75')"
+    ]
+  }
+}

@@ -98,10 +98,12 @@ class Room(
         assignedColor = assignedColor,
         members = players.entries.map {
             MemberShared(
+                roomId = id,
                 name = it.value.user.userName,
                 assignedColor = it.key,
                 userId = it.value.user.userId,
-                profilePicUrl = it.value.user.profilePicUrl
+                profilePicUrl = it.value.user.profilePicUrl,
+                isOwner = it.value.colorAssigned == assignedColor
             )
         }
     )

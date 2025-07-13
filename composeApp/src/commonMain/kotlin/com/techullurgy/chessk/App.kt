@@ -14,14 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.techullurgy.chessk.core.remote.coreRemoteModule
 import com.techullurgy.chessk.core.ui.snackbar.AppSnackbarHost
 import com.techullurgy.chessk.core.ui.snackbar.LocalSnackbarHostState
-import com.techullurgy.chessk.database.di.databaseModule
 import com.techullurgy.chessk.navigation.AppNavigation
 import com.techullurgy.chessk.navigation.appModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import org.koin.compose.KoinApplication
 import org.koin.core.KoinApplication
+import org.koin.dsl.module
 
 @Composable
 fun App(
@@ -32,8 +33,7 @@ fun App(
         application = {
             platformApplication()
             modules(
-                coreRemoteModule,
-                databaseModule,
+                module { single { CoroutineScope(SupervisorJob()) } },
                 appModule
             )
         }
