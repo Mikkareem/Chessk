@@ -60,12 +60,15 @@ include(":core:ui:snackbar")
 include(":feature:game:models")
 include(":feature:game:data")
 include(":feature:rooms:data")
+include(":feature:user_details:data")
 
 include(":feature:register:domain")
 include(":feature:register:presentation")
 
 include(":feature:login:domain")
 include(":feature:login:presentation")
+
+include(":feature:menu:presentation")
 
 include(":feature:create_room:domain")
 include(":feature:create_room:presentation")

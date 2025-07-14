@@ -21,10 +21,18 @@ import com.techullurgy.chessk.shared.endpoints.LeaveRoomEndpoint
 import com.techullurgy.chessk.shared.endpoints.LoginUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.RegisterUserEndpoint
 import com.techullurgy.chessk.shared.endpoints.StartGameEndpoint
+import com.techullurgy.chessk.shared.endpoints.UploadProfilePictureEndpoint
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.onUpload
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
+import io.ktor.http.ContentDisposition
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 
 internal class KtorChessKApi(
     private val httpClient: HttpClient,
@@ -92,4 +100,37 @@ internal class KtorChessKApi(
         val response = httpClient.postWithoutBody(url = LeaveRoomEndpoint(roomId).actualUrl)
         response.body<Unit>()
     }
+
+    override fun uploadProfilePicture(bytes: ByteArray): Flow<Float> =
+        uploadProfilePicture(bytes, httpClient)
 }
+
+private fun uploadProfilePicture(picture: ByteArray, client: HttpClient): Flow<Float> =
+    channelFlow {
+        client.submitFormWithBinaryData(
+            url = UploadProfilePictureEndpoint.actualUrl,
+            formData = formData {
+                append("type", "profile_picture")
+                append("content", picture, Headers.build {
+                    append(HttpHeaders.ContentType, "image/*")
+                    append(
+                        HttpHeaders.ContentDisposition,
+                        ContentDisposition.Attachment.withParameter(
+                            ContentDisposition.Parameters.FileName,
+                            "profile_picture.jpg"
+                        ).toString()
+                    )
+                })
+            }
+        ) {
+            onUpload { bytesSentTotal, totalBytesLength ->
+                val totalBytesLengthAdjusted = totalBytesLength ?: 1L
+                if (totalBytesLengthAdjusted == 1L) {
+                    send(1f)
+                } else {
+                    val percent = (bytesSentTotal / totalBytesLengthAdjusted).toFloat()
+                    send(percent)
+                }
+            }
+        }
+    }

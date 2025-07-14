@@ -24,4 +24,6 @@ class RemoteDataSource(
     fun startGame(roomId: String) = api.startGame(roomId)
 
     fun leaveRoom(roomId: String) = api.leaveRoom(roomId)
+
+    fun uploadProfilePicture(bytes: ByteArray) = api.uploadProfilePicture(bytes)
 }

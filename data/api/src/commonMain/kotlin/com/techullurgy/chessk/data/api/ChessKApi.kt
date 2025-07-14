@@ -27,4 +27,6 @@ interface ChessKApi {
     fun startGame(roomId: String): Flow<AppResult<Unit>>
 
     fun leaveRoom(roomId: String): Flow<AppResult<Unit>>
+
+    fun uploadProfilePicture(bytes: ByteArray): Flow<Float>
 }
