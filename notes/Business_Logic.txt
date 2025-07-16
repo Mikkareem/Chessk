@@ -1,0 +1,12 @@
+
+User Navigation Flow
+
+(Register / Login) -->
+(Menu) - (Create Room, Created Rooms, Join Room, Joined Rooms) -->
+
+(Create Room) - [Room_name, Room_description?] - {Save, cancel}
+(Join Room) - Bottom Sheet - [Room_id, preferred_color?] - {Join, cancel}
+(Created Rooms) -
+
+
+Loading ---> Connected ---> Disconnected

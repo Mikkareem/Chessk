@@ -1,0 +1,232 @@
+@startuml
+
+class "ChessKWebsocketDataSource" as cwds {
+    - **socket**: DefaultClientWebsocketSession? = null
+    - {field}**_connectionActiveStatusFlow**: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    + **connectionActiveStatusFlow**: StateFlow<Boolean>
+    - **_eventsFlow**: Flow<AppResult<SocketEvent>>
+    + **eventsFlow**: SharedFlow<AppResult<SocketEvent>>
+    --constructor--
+    + **init**(CoroutineScope, ChessKApi)
+    - **scope**: CoroutineScope
+    - **api**: ChessKApi
+    --methods--
+    + fun **startSession()**: Unit
+    + fun **stopSession()**: Unit
+}
+
+interface "AppResult<out T>" as ar <<Sealed Interface>> {
+    ----
+    + {field}data class **Success<T>(val data: T)**: AppResult<T>
+    + data object **Failure**: AppResult<Nothing>
+    + data object **Loading**: AppResult<Nothing>
+}
+
+interface "SocketEvent" as se <<Sealed Interface>> {
+    ----
+    + {field}data class **SuccessEvent<T>(val event: T)**: SocketEvent
+    + {field}data class **FailureEvent(val cause: Throwable)**: SocketEvent
+}
+
+class "ChessKApi" as ca {
+    + suspend fun **wsConnectionToGame()**: DefaultClientWebsocketSession?
+}
+
+'Hidden Start
+cwds -[hidden]d-> se
+ar -[hidden]d-> ca
+se -[hidden]d-> ar
+'Hidden End
+
+@enduml
+
+
+@startuml
+digraph T {
+    data_remote_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>data:remote</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD>ChessKRemoteDataSource</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+    data_websockets_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>data:websockets</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD PORT="f1">ChessKWebsocketDataSource</TD></TR>
+                            <TR><TD>SocketEvent</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+    data_datastore_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>data:datastore</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD PORT="f1">ChessKDataStore</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+    data_database_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>data:database</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD PORT="f1">ChessKDatabase</TD></TR>
+                            <TR><TD>GameDao</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+    data_api_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>data:api</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD PORT="f1">ChessKApi</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+    base_components [
+        shape=plaintext
+        label=<
+            <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                <TR><TD>base</TD></TR>
+                <TR>
+                    <TD port="c">
+                        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+                            <TR><TD PORT="f1">AppResult</TD></TR>
+                        </TABLE>
+                    </TD>
+                </TR>
+            </TABLE>
+        >
+    ];
+
+}
+@enduml
+
+
+@startuml
+digraph G {
+
+    f_auth_domain [label="feature:auth\ndomain"]
+    f_create_room_domain [label="feature:create_room\ndomain"]
+    f_created_rooms_domain [label="feature:created_rooms\ndomain"]
+    f_join_room_domain [label="feature:join_room\ndomain"]
+    f_joined_rooms_domain [label="feature:joined_rooms\ndomain"]
+    f_game_room_domain [label="feature:game\ndomain"]
+
+    f_auth_api [label="feature:auth\napi"]
+    f_create_room_api [label="feature:create_room\napi"]
+    f_created_rooms_api [label="feature:created_rooms\napi"]
+    f_join_room_api [label="feature:join_room\napi"]
+    f_joined_rooms_api [label="feature:joined_rooms\napi"]
+    f_game_room_api [label="feature:game\napi"]
+
+    f_auth_presentation [label="feature:auth\npresentation"]
+    f_create_room_presentation [label="feature:create_room\npresentation"]
+    f_created_rooms_presentation [label="feature:created_rooms\npresentation"]
+    f_join_room_presentation [label="feature:join_room\npresentation"]
+    f_joined_rooms_presentation [label="feature:joined_rooms\npresentation"]
+    f_game_room_presentation [label="feature:game\npresentation"]
+
+    f_game_data [label="feature:game\ndata"]
+    f_auth_data [label="feature:auth\ndata"]
+    f_room_data [label="feature:room\ndata"]
+
+    data_websockets -> data_api [label="api"]
+    data_api -> coroutines [label="api"]
+    data_api -> ktor_bundle
+    data_api -> shared [label="api"]
+    data_api -> base [label="api"]
+    data_api -> data_datastore
+    data_remote -> data_api [label="api"]
+
+
+    f_auth_presentation -> f_auth_domain
+    f_create_room_presentation -> f_create_room_domain
+    f_created_rooms_presentation -> f_created_rooms_domain
+    f_join_room_presentation -> f_join_room_domain
+    f_joined_rooms_presentation -> f_joined_rooms_domain
+    f_game_room_presentation -> f_game_room_domain
+
+    f_auth_api -> f_auth_presentation
+    f_create_room_api -> f_create_room_presentation
+    f_created_rooms_api -> f_created_rooms_presentation
+    f_join_room_api -> f_join_room_presentation
+    f_joined_rooms_api -> f_joined_rooms_presentation
+    f_game_room_api -> f_game_room_presentation
+
+    f_auth_domain -> f_auth_data
+
+    f_room_data -> data_remote
+    f_auth_data -> data_remote
+    f_auth_data -> data_datastore
+    f_game_data -> data_websockets
+    f_game_data -> data_remote
+    f_game_data -> data_database
+
+    f_create_room_domain -> f_room_data
+    f_created_rooms_domain -> f_room_data
+    f_join_room_domain -> f_room_data
+    f_joined_rooms_domain -> f_game_data [label="api"]
+    f_game_room_domain -> f_game_data [label="api"]
+
+
+    navigation -> f_auth_api
+    navigation -> f_create_room_api
+    navigation -> f_created_rooms_api
+    navigation -> f_join_room_api
+    navigation -> f_joined_rooms_api
+    navigation -> f_game_room_api
+
+    di -> f_auth_api [color=red]
+    di -> f_create_room_api [color=red]
+    di -> f_created_rooms_api [color=red]
+    di -> f_join_room_api [color=red]
+    di -> f_joined_rooms_api [color=red]
+    di -> f_game_room_api [color=red]
+
+    app -> navigation
+    app -> di
+}
+@enduml

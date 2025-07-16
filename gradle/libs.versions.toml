@@ -1,34 +1,36 @@
 [versions]
-agp = "8.10.1"
-android-compileSdk = "35"
+agp = "8.11.0"
+android-compileSdk = "36"
 android-minSdk = "24"
-android-targetSdk = "35"
+android-targetSdk = "36"
 androidx-activity = "1.10.1"
-androidx-appcompat = "1.7.0"
+androidx-appcompat = "1.7.1"
 androidx-constraintlayout = "2.2.1"
 androidx-core = "1.16.0"
 androidx-espresso = "3.6.1"
-androidx-lifecycle = "2.9.0"
+androidx-lifecycle = "2.9.1"
 androidx-testExt = "1.2.1"
 composeHotReload = "1.0.0-alpha10"
-composeMultiplatform = "1.8.1"
+composeMultiplatform = "1.8.2"
 junit = "4.13.2"
-kotlin = "2.1.21"
+kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
-ksp = "2.1.21-2.0.1"
-room = "2.7.1"
-sqlite = "2.5.1"
-navigation = "2.9.0-beta01"
-serialization = "1.8.1"
-koin = "4.0.3"
-ktor = "3.1.3"
-mockk = "1.14.2"
-jupiter = "5.12.2"
-turbine = "1.2.0"
+ksp = "2.2.0-2.0.2"
+room = "2.7.2"
+sqlite = "2.5.2"
+navigation = "2.9.0-beta03"
+serialization = "1.9.0"
+datastore = "1.1.7"
+koin = "4.1.0"
+ktor = "3.2.1"
+mockk = "1.14.4"
+jupiter = "5.13.3"
+turbine = "1.2.1"
 spotless = "7.0.4"
 ktlint = "1.6.0"
 ktlint-compose-rules = "0.4.16"
-
+logback = "1.5.18"
+datetime = "0.7.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -48,11 +50,13 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 ktor-client-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
@@ -78,12 +82,27 @@ room-gradle-plugin = { module = "androidx.room:room-gradle-plugin", version.ref 
 compose-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "composeMultiplatform" }
 spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 
+# Server Dependencies
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml-jvm", version.ref = "ktor" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+
 [bundles]
 koin = ["koin-compose", "koin-compose-viewmodel"]
-ktor = ["ktor-client-core", "ktor-client-cio", "ktor-client-websockets", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
-
+datastore = ["datastore", "datastore-preferences"]
+ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-websockets", "ktor-client-content-negotiation", "ktor-serialization-json"]
+ktor-server = ["ktor-server-core", "ktor-server-websockets", "ktor-server-content-negotiation", "logback-classic", "ktor-serialization-json", "ktor-server-netty", "ktor-server-sessions", "ktor-server-config-yaml"]
 
 [plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
