@@ -15,6 +15,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            implementation(projects.core.ui.components)
             implementation(projects.feature.login.domain)
         }
     }

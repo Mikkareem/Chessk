@@ -4,6 +4,8 @@ import com.techullurgy.chessk.base.AppResult
 import kotlinx.coroutines.flow.Flow
 
 interface UserDetailsRepository {
+    val isUserLoggedIn: Flow<Boolean>
+
     fun loginUser(email: String, password: String): Flow<AppResult<String>>
     fun registerUser(name: String, email: String, password: String): Flow<AppResult<String>>
 

@@ -54,6 +54,7 @@ include(":data:remote")
 include(":data:websockets")
 
 include(":core:constants")
+include(":core:ui:components")
 include(":core:ui:photo_picker")
 include(":core:ui:snackbar")
 
@@ -61,6 +62,9 @@ include(":feature:game:models")
 include(":feature:game:data")
 include(":feature:rooms:data")
 include(":feature:user_details:data")
+
+include(":feature:splash:domain")
+include(":feature:splash:presentation")
 
 include(":feature:register:domain")
 include(":feature:register:presentation")

@@ -14,6 +14,8 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation(projects.feature.joinRoom.domain)
         }
     }
 }

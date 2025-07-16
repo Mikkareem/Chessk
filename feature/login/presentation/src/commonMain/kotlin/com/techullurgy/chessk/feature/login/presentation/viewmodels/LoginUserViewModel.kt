@@ -54,7 +54,7 @@ internal class LoginUserViewModel(
 
     fun onAction(action: LoginUserUiAction) {
         when (action) {
-            is LoginUserUiAction.OnLogin -> TODO()
+            is LoginUserUiAction.OnLogin -> loginUser(action.email, action.password)
         }
     }
 }

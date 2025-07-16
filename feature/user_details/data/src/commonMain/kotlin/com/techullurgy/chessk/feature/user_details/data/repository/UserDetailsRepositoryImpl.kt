@@ -14,6 +14,11 @@ internal class UserDetailsRepositoryImpl(
     private val remoteDataSource: RemoteDataSource,
     private val datastoreManager: DatastoreManager,
 ): UserDetailsRepository {
+    override val isUserLoggedIn = datastoreManager.clientIdFlow
+        .map {
+            it?.let { true } ?: false
+        }
+
     override fun loginUser(
         email: String,
         password: String

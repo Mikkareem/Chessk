@@ -9,6 +9,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(projects.feature.userDetails.data)
+            api(projects.base)
         }
     }
 }

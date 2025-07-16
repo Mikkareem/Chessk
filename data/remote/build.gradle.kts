@@ -8,7 +8,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.kotlinx.coroutines.core)
 
-            implementation(projects.data.api)
+            api(projects.data.api)
         }
     }
 }

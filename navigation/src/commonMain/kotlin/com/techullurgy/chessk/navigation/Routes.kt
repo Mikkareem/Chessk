@@ -3,6 +3,9 @@ package com.techullurgy.chessk.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
+internal data object SplashRoute
+
+@Serializable
 internal data object LoginRoute
 
 @Serializable
